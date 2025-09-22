@@ -10,7 +10,7 @@
     <?php date_default_timezone_set('Asia/Krasnoyarsk'); ?>
     <header>
         <nav>
-            <a href="index.php">Главная</a>
+            <a href="index.php">Домашняя</a>
             <a href="about.php">О нас</a>
             <a href="manga-catalog.php">Каталог манги</a>
             <a href="merch-catalog.php">Каталог мерча</a>

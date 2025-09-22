@@ -1,5 +1,5 @@
 <?php
-$title = "Главная страница";
+$title = "Домашняя страница";
 require("blocks/header.php");
 ?>
 
