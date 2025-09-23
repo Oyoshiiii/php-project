@@ -10,9 +10,15 @@ require("blocks/header.php");
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AnimeManga Store - Магазин мерча и энциклопедия манги</title>
     <link rel="stylesheet" href="css/index.css">
+    <!--
+    надо наверное поудалять лишние стили в styles.css, которые уже есть в index.css
+    либо их скопировать и такими же сделать под остальные страницы
+    -->
 </head>
 <body>
-    <!-- Шапка сайта -->
+    <!-- Шапка сайта 
+     может вынесем этот header в header.php? зачем нам два хедера
+     -->
     <header>
         <div class="container">
             <div class="header-content">
@@ -190,7 +196,9 @@ require("blocks/header.php");
         </div>
     </section>
 
-    <!-- Подвал -->
+    <!-- Подвал 
+     его можно наоборот уже в ending.php
+     -->
     <footer>
         <div class="container">
             <div class="footer-content">
