@@ -55,6 +55,32 @@ require("blocks/header.php");
                 <button>Найти</button>
             </div>
         </div>
+        <div>
+            <style>
+                .manga-catalog {
+                display: grid; 
+                grid-template-columns: repeat(4, 1fr); 
+                gap: 1em;
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                grid-column-gap: 0px;
+                grid-row-gap: 0px;
+                }
+
+                .manga-catalog > div {
+                background-color: #c25f5fff; 
+                padding: 1em;
+                text-align: center;
+                }
+            </style>
+            <div class="manga-catalog"> <!--Позже доделаю, пока просто проверка-->
+                <div>test</div>
+                <div>test</div>
+                <div>test</div>
+                <div>test</div>
+                <div>test</div>
+            </div>
+        </div>
     </div>
     <script>
         // заглушка для фильтров
