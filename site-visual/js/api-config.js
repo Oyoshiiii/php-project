@@ -38,6 +38,8 @@ async function graphQLRequest(query, variables = {}){
             console.error('Ошибки GraphQL:', data.errors);
             throw new Error(data.errors[0].message);
         }
+
+        return data;
     }
     catch(error){
         console.error("Ошибка с запросом к API", error);

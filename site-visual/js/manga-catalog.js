@@ -131,7 +131,7 @@ class MangaCatalog{
         if(!container) return;
 
         try{
-            const result = graphQLRequest(MANGA_QUERIES.byGenres, {
+            const result = await graphQLRequest(MANGA_QUERIES.byGenres, {
                 genres: genres,
                 page: page,
                 perPage: perPage
