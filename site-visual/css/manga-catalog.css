@@ -110,6 +110,7 @@
             color: white;
         }
         
+        /* Хлебные крошки */
         .breadcrumbs {
             padding: 15px 0;
             font-size: 0.9rem;
@@ -128,7 +129,7 @@
         .page-header {
             padding: 30px 0;
             text-align: center;
-            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             margin-bottom: 40px;
         }
@@ -262,7 +263,7 @@
             font-size: 0.9rem;
         }
         
-        /* Страницы товаров */
+        /* Пагинация */
         .pagination {
             display: flex;
             justify-content: center;

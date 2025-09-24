@@ -19,16 +19,6 @@ require("blocks/header.php");
     <!-- Шапка сайта 
      может вынесем этот header в header.php? зачем нам два хедера ✅
      -->
-
-    <!-- Герой-секция -->
-    <section class="hero">
-        <div class="container">
-            <h1>Аниме-мерч и энциклопедия манги в одном месте</h1>
-            <p>Покупайте эксклюзивные товары с любимыми персонажами и узнавайте больше о вселенных аниме и манги</p>
-            <button class="btn btn-primary">Перейти к покупкам</button>
-        </div>
-    </section>
-
     <!-- Секция категорий -->
     <section class="categories">
         <div class="container">
