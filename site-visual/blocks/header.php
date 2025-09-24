@@ -8,7 +8,7 @@
 </head>
 <body>
     <?php date_default_timezone_set('Asia/Krasnoyarsk'); ?>
-    <header>
+    <!--<header>
         <nav>
             <a href="index.php">Домашняя</a>
             <a href="about.php">О нас</a>
@@ -18,6 +18,31 @@
                 <img src="images/shopping cart.png" id="shopping-cart-img">
             </a>
         </nav>
+    </header>-->
+
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🎌</span>
+                    <span>MangaMerchHub</span>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="index.php">Главная</a></li>
+                        <li><a href="merch-catalog.php">Магазин</a></li>
+                        <li><a href="merch-catalog.php">Манга</a></li>
+                        <li><a href="#">Энциклопедия</a></li>
+                        <li><a href="#">Новости</a></li>
+                        <li><a href="about.php">О нас</a></li>
+                    </ul>
+                </nav>
+                <div class="user-actions">
+                    <button class="btn btn-outline">Войти</button>
+                    <button class="btn btn-primary">Корзина (0)</button>
+                </div>
+            </div>
+        </div>
     </header>
 
     <main></main>
