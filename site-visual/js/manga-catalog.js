@@ -90,6 +90,62 @@ const MANGA_QUERIES = {
                 }
             }
         }
+    `,
+    //запрос для поиска подробной информации по манге, 
+    //для вывода после нажатия на иконку с нужной мангой
+    details:
+    `
+        query ($id: Int) {
+            Media (id: $id, type: MANGA) {
+                id
+                title { 
+                    romaji
+                    english
+                }
+                description
+                averageScore
+                meanScore
+                popularity
+                coverImage { 
+                    large
+                    extraLarge
+                    color
+                }
+                bannerImage
+                genres
+                tags {
+                    name
+                    description
+                    rank
+                }
+                status
+                chapters
+                volumes
+                format
+                startDate {
+                    year
+                    month
+                    day
+                }
+                endDate {
+                    year
+                    month
+                    day
+                }
+                siteUrl
+                characters (perPage: 10, sort: ROLE) {
+                    nodes {
+                        name {
+                            full
+                            native
+                        }
+                        image {
+                            large
+                        }
+                    }
+                }
+            }
+        }
     `
 };
 
@@ -158,8 +214,7 @@ class MangaCatalog{
         }
         container.innerHTML = mangaList.map(manga => `
             <div class="manga-card" data-id="${manga.id}">
-                <img src="${manga.coverImage.large}" 
-                     alt="${manga.title.romaji || manga.title.english}">
+                <img src="${manga.coverImage.large}" alt="${manga.title.romaji || manga.title.english}">
                 <h3>${manga.title.romaji || manga.title.english}</h3>
                 <p>${manga.averageScore + '/10' || 'N/A'}</p>
                 <p>${manga.genres.slice(0, 3).join(', ')}</p>
@@ -167,9 +222,85 @@ class MangaCatalog{
         `).join('');
     }
 
-    //отображение деталей манги после нажатия на иконку с ней
-    async showMangaDetails(){
+    //получение деталей манги после нажатия на иконку с ней
+    async getMangaDetails(mangaId, containerId){
+        const container = document.getElementById(containerId);
+        if(!container) return;
 
+        container.innerHTML = '<div class="loading">Загрузка информации о манге...</div>';
+        
+        try {
+            const result = await graphQLRequest(MANGA_QUERIES.details, { id: parseInt(mangaId) });
+            
+            if (result && result.data) {
+                this.displayMangaDetails(result.data.Media, container);
+            }
+        } catch (error) {
+            container.innerHTML = '<p class="error">Ошибка загрузки информации о манге</p>';
+        }
+    }
+
+    //отображение деталей манги уже на сайте
+    displayMangaDetails(manga, container){
+        const description = manga.description;
+        if(description.trim() === ''){
+            description = "Описание отсутствует";
+        }
+
+        //этот html код тоже по сути надо, чтобы Даниил глянул
+        container.innerHTML = `
+        <div class="manga-detail-header" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${manga.bannerImage || manga.coverImage.extraLarge}')">
+            <div class="manga-poster">
+                <img src="${manga.coverImage.extraLarge}" alt="${manga.title.romaji}">
+            </div>
+            <div class="manga-header-info">
+                <h1>${manga.title.romaji || manga.title.english}</h1>
+                ${manga.title.english ? `<p class="english-title">${manga.title.english}</p>` : ''}
+                    
+                <div class="manga-stats">
+                    <span class="score">⭐ ${manga.averageScore || 'N/A'}/100</span>
+                    <span class="popularity">👥 ${manga.popularity || 0}</span>
+                    <span class="status">${this.getStatusText(manga.status)}</span>
+                </div>
+                    
+                <div class="manga-meta">
+                    <span>Глав: ${manga.chapters || 'Неизвестно'}</span>
+                    <span>Томов: ${manga.volumes || 'Неизвестно'}</span>
+                    <span>Формат: ${this.getFormatText(manga.format)}</span>
+                </div>
+                    
+                <div class="manga-genres">
+                   ${manga.genres.map(genre => `<span class="genre-tag">${genre}</span>`).join('')}
+                </div>
+                    
+                <button class="btn-read-manga" onclick="mangaCatalog.startReading(${manga.id})">
+                    📖 Начать читать
+                </button>
+                ${manga.siteUrl ? `<a href="${manga.siteUrl}" target="_blank" class="btn-anilist">🔗 AniList</a>` : ''}
+            </div>
+        </div>
+            
+        <div class="manga-detail-content">
+            <section class="manga-description">
+                <h2>📝 Описание</h2>
+                <p>${cleanDescription}</p>
+            </section>
+                
+            ${manga.characters && manga.characters.nodes.length > 0 ? `
+            <section class="manga-characters">
+                <h2>👥 Персонажи</h2>
+                <div class="characters-grid">
+                    ${manga.characters.nodes.slice(0, 6).map(character => `
+                        <div class="character-card">
+                            <img src="${character.image.large}" alt="${character.name.full}">
+                            <p>${character.name.full}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            </section>
+            ` : ''}
+        </div>
+        `;
     }
 
     //настройка пагинации
