@@ -116,7 +116,7 @@ class MangaCatalog{
 
             if (result && result.data){
                 //showManga - метод отображения манги в контейнере
-                this.showManga(result.data.Page.media, container);
+                this.showMangaGrid(result.data.Page.media, container);
             }
         }
         catch(error){
@@ -138,9 +138,9 @@ class MangaCatalog{
             })
 
             if(result && result.data){
-                this.showManga(result.data.Page.media, container);
+                this.showMangaGrid(result.data.Page.media, container);
                 //настройка пагинации после загрузки
-                this.pagination(result.data.Page.pageInfo, container);
+                this.pagination(result.data.Page.pageInfo, genres, containerId);
             }
         }
         catch(error){
@@ -149,14 +149,41 @@ class MangaCatalog{
         }
     }
 
-    //отображение манги в контейнере
-    async showManga(mangaList, container){
+    //вывод манги в кратком отображении для грида
+    //опять же весь визуал условный, его можно менять
+    showMangaGrid(mangaList, container) {
+        if (!mangaList || mangaList.length === 0) {
+            container.innerHTML = '<p class="no-results">Манга не найдена</p>';
+            return;
+        }
+        container.innerHTML = mangaList.map(manga => `
+            <div class="manga-card" data-id="${manga.id}">
+                <img src="${manga.coverImage.large}" 
+                     alt="${manga.title.romaji || manga.title.english}">
+                <h3>${manga.title.romaji || manga.title.english}</h3>
+                <p>${manga.averageScore + '/10' || 'N/A'}</p>
+                <p>${manga.genres.slice(0, 3).join(', ')}</p>
+            </div>
+        `).join('');
+    }
+
+    //отображение деталей манги после нажатия на иконку с ней
+    async showMangaDetails(){
 
     }
 
     //настройка пагинации
-    async pagination(pageInfo, container){
-
+    pagination(pageInfo, genres, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container || !pageInfo || !pageInfo.hasNextPage) return;
+        const loadMoreBtn = document.createElement('button');
+        loadMoreBtn.className = 'load-more-btn';
+        loadMoreBtn.innerHTML = `Загрузить еще (${pageInfo.currentPage}/${pageInfo.lastPage})`;
+        //обработчик клика для кнопки Загрузить еще
+        loadMoreBtn.onclick = () => {
+            this.loadByGenres(containerId, genres, pageInfo.currentPage + 1);
+        };
+        container.appendChild(loadMoreBtn);
     }
 }
 
