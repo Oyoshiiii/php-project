@@ -38,7 +38,7 @@
                     </ul>
                 </nav>
                 <div class="user-actions">
-                    <button class="btn btn-outline">Войти</button>
+                    <button class="btn btn-outline"><a href="login.php">Войти</a></button>
                     <button class="btn btn-primary">Корзина (0)</button>
                 </div>
             </div>
