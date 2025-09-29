@@ -171,7 +171,7 @@ class MangaCatalog{
             });
 
             if (result && result.data){
-                //showManga - метод отображения манги в контейнере
+                //showMangaGrid - метод отображения манги в контейнере
                 this.showMangaGrid(result.data.Page.media, container);
             }
         }
@@ -258,7 +258,7 @@ class MangaCatalog{
                 ${manga.title.english ? `<p class="english-title">${manga.title.english}</p>` : ''}
                     
                 <div class="manga-stats">
-                    <span class="score">⭐ ${manga.averageScore || 'N/A'}/100</span>
+                    <span class="score">${manga.averageScore + "/10" || 'N/A'}</span>
                     <span class="popularity">👥 ${manga.popularity || 0}</span>
                     <span class="status">${this.getStatusText(manga.status)}</span>
                 </div>
@@ -283,7 +283,7 @@ class MangaCatalog{
         <div class="manga-detail-content">
             <section class="manga-description">
                 <h2>📝 Описание</h2>
-                <p>${cleanDescription}</p>
+                <p>${description}</p>
             </section>
                 
             ${manga.characters && manga.characters.nodes.length > 0 ? `
