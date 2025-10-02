@@ -1,15 +1,59 @@
 <?php
-    /*
+session_start();
+
+// Подключение к базе данных
+try {
     $conn = new PDO("mysql:host=localhost;dbname=mangawebsite", "root", "12345");
-    $sql = "SELECT * FROM Users";
-    $result = $conn->query($sql);
-    while($row = $result->fetch(PDO::FETCH_ASSOC)) {
-        echo "ID: " .  . "<br>";
-        echo "Номер: " . $row['number'] . "<br>";
-        echo "Email: " . $row['email'] . "<br>";
-        echo "Пароль: " . $row['password'] . "<br>";
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch(PDOException $e) {
+    die("Ошибка подключения: " . $e->getMessage());
+}
+
+$error = '';
+$success = '';
+
+// Обработка формы входа
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $identifier = $_POST['identifier'] ?? '';
+    $password = $_POST['password'] ?? '';
+    $login_type = $_POST['login_type'] ?? 'email';
+    
+    if (!empty($identifier) && !empty($password)) {
+        if ($login_type === 'email') {
+            $sql = "SELECT * FROM Users WHERE email = :identifier";
+        } else {
+            $sql = "SELECT * FROM Users WHERE number = :identifier";
+        }
+        
+        try {
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':identifier', $identifier);
+            $stmt->execute();
+            
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($user) {
+                if (password_verify($password, $user['password'])) {
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['email'] = $user['email'];
+                    
+                    $success = "Успешный вход!";
+                    header("Location: index.php");
+                    exit();
+                } else {
+                    $error = "Неверный пароль!";
+                }
+            } else {
+                $error = "Пользователь не найден!";
+            }
+        } catch(PDOException $e) {
+            $error = "Ошибка базы данных: " . $e->getMessage();
+        }
+    } else {
+        $error = "Заполните все поля!";
     }
-    */
+}
 ?>
 <html>
     <header>
@@ -18,42 +62,58 @@
         <link rel="stylesheet" href="css/login.css">
     </header>
     <body>
-        <div class="container">
+    <div class="container">
         <header>
             <h1>Вход</h1>
         </header>
         
+        <?php if (!empty($error)): ?>
+            <div class="error-message"><?php echo htmlspecialchars($error); ?></div>
+        <?php endif; ?>
+        
+        <?php if (!empty($success)): ?>
+            <div class="success-message"><?php echo htmlspecialchars($success); ?></div>
+        <?php endif; ?>
+        
         <div class="forms-container" id="formsContainer">
             <div class="form-wrapper top" id="form1">
-                <form method="get">
+                <form method="post">
+                    <input type="hidden" name="login_type" value="email">
                     <h2 class="form-title">Вход по Email</h2>
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" name="email" placeholder="Введите ваш email">
+                        <input type="email" id="email" name="identifier" placeholder="Введите ваш email" required>
                     </div>
                     <div class="form-group">
                         <label for="password1">Пароль</label>
-                        <input type="password" id="password1" name="password" placeholder="Введите пароль">
+                        <input type="password" id="password1" name="password" placeholder="Введите пароль" required>
                     </div>
+                    <button type="submit" class="regButton">
+                        <span class="swap-icon"></span> Войти
+                    </button>
                 </form>
             </div>
             
             <div class="form-wrapper bottom" id="form2">
-                <form method="get">
-                    <h2 class="form-title">Входа по номеру</h2>
+                <form method="post">
+                    <input type="hidden" name="login_type" value="number">
+                    <h2 class="form-title">Вход по номеру</h2>
                     <div class="form-group">
                         <label for="number">Номер телефона</label>
-                        <input type="text" id="number" name="number" placeholder="Введите ваш номер">
+                        <input type="text" id="number" name="identifier" placeholder="Введите ваш номер" required>
                     </div>
                     <div class="form-group">
                         <label for="password2">Пароль</label>
-                        <input type="password" id="password2" name="password" placeholder="Введите пароль">
+                        <input type="password" id="password2" name="password" placeholder="Введите пароль" required>
                     </div>
+                    <button type="submit" class="regButton">
+                        <span class="swap-icon"></span> Войти
+                    </button>
                 </form>
             </div>
         </div>
         
-        <button class="swap-button" id="swapButton">
+        <button class="swap-button" id="swapButton" type="button">
             <span class="swap-icon">⇅</span> Хочу войти по-другому
         </button>
         
@@ -62,6 +122,7 @@
         <footer>
         </footer>
     </div>
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const swapButton = document.getElementById('swapButton');
@@ -94,5 +155,5 @@
             });
         });
     </script>
-    </body>
+</body>
 </html>
