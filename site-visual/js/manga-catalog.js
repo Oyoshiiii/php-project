@@ -151,6 +151,49 @@ const MANGA_QUERIES = {
 
 //класс для работы с каталогом манги
 class MangaCatalog{
+    constructor() {
+        this.genres = [];
+        this.currentPage = 1;
+        this.currentSearch = '';
+        this.isSearching = false;
+    }
+    //настройка обработчика событий
+    setupEventListeners() {
+        const searchInput = document.getElementById('searchInput');
+        let searchTimeout;
+        
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.currentSearch = e.target.value;
+                this.currentPage = 1;
+                this.isSearching = true;
+                
+                if (this.currentSearch.trim() === '') {
+                    this.isSearching = false;
+                    this.loadPopularManga('mangaContainer');
+                } else {
+                    this.searchManga('mangaContainer', this.currentSearch);
+                }
+            }, 500);
+        });
+
+        document.getElementById('closeDetail').addEventListener('click', () => {
+            document.getElementById('mangaDetail').classList.remove('active');
+        });
+    }
+    //перевод манги
+    translateGenre(genre){
+        return MANGA_GENRES_TRANSLATED[genre] || genre;
+    }
+    //перевод нескольких манг
+    translateGenres(genres){
+        return genres.map(genre => this.translateGenre(genre));
+    }
+    //перевод просто всех жанров без фильтров по категориям
+    translateAllGenres(){
+        return MANGA_GENRES;
+    }
     //подгружает еще несколько популярных манг (максимальное кол-во 12) 
     //для общей подборки (не по категориям)
     async loadPopularManga(containerId, maxManga = 12){
@@ -182,44 +225,99 @@ class MangaCatalog{
     }
 
     //загрузка манги по жанрам
-    async loadByGenres(containerId, genres = [], page = 1, perPage = 24){
+    async loadByGenres(containerId, genres = [], page = 1, perPage = 24) {
         const container = document.getElementById(containerId);
-        if(!container) return;
+        if (!container) return;
 
-        try{
+        try {
             const result = await graphQLRequest(MANGA_QUERIES.byGenres, {
                 genres: genres,
                 page: page,
                 perPage: perPage
-            })
+            });
 
-            if(result && result.data){
-                this.showMangaGrid(result.data.Page.media, container);
-                //настройка пагинации после загрузки
+            if (result && result.data) {
+                if (page === 1) {
+                    this.showMangaGrid(result.data.Page.media, container);
+                } else {
+                    const existingManga = container.querySelectorAll('.manga-card');
+                    const loadMoreBtn = container.querySelector('.load-more-btn');
+                    if (loadMoreBtn) loadMoreBtn.remove();
+                    
+                    this.showMangaGrid(result.data.Page.media, container, false);
+                }
+                //настройка пагинации
                 this.pagination(result.data.Page.pageInfo, genres, containerId);
             }
-        }
-        catch(error){
-            //класс error условный, его можно поменять вдальнейшем
+        } catch(error) {
             container.innerHTML = '<p class="error">Ошибка загрузки манги</p>';
+        }
+    }
+
+    //поиск манги
+    async searchManga(containerId, searchTerm, page = 1, perPage = 24) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        try {
+            const result = await graphQLRequest(MANGA_QUERIES.search, {
+                search: searchTerm,
+                page: page,
+                perPage: perPage
+            });
+
+        if (result && result.data) {
+                if (page === 1) {
+                    this.showMangaGrid(result.data.Page.media, container);
+                } else {
+                    const loadMoreBtn = container.querySelector('.load-more-btn');
+                    if (loadMoreBtn) loadMoreBtn.remove();
+                    this.showMangaGrid(result.data.Page.media, container, false);
+                }
+                //настройка пагинации
+                this.pagination(result.data.Page.pageInfo, [], containerId, true, searchTerm);
+            }
+        } catch(error) {
+            container.innerHTML = '<p class="error">Ошибка поиска манги</p>';
         }
     }
 
     //вывод манги в кратком отображении для грида
     //опять же весь визуал условный, его можно менять
-    showMangaGrid(mangaList, container) {
+    showMangaGrid(mangaList, container, clearContainer) {
         if (!mangaList || mangaList.length === 0) {
-            container.innerHTML = '<p class="no-results">Манга не найдена</p>';
+            if (clearContainer) {
+                container.innerHTML = '<p class="no-results">Манга не найдена</p>';
+            }
             return;
         }
+        
+        if (clearContainer) {
+            container.innerHTML = '';
+        }
+
         container.innerHTML = mangaList.map(manga => `
             <div class="manga-card" data-id="${manga.id}">
                 <img src="${manga.coverImage.large}" alt="${manga.title.romaji || manga.title.english}">
                 <h3>${manga.title.romaji || manga.title.english}</h3>
-                <p>${manga.averageScore + '/10' || 'N/A'}</p>
-                <p>${manga.genres.slice(0, 3).join(', ')}</p>
+                <p>${manga.averageScore + '/100' || 'N/A'}</p>
+                <p>${this.translateGenres(manga.genres.slice(0, 3).join(', '))}</p>
             </div>
         `).join('');
+
+         if (clearContainer) {
+            container.innerHTML = mangaHTML;
+        } else {
+            container.innerHTML += mangaHTML;
+        }
+        
+        //обработчики событий для карточек манги
+        container.querySelectorAll('.manga-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const mangaId = card.getAttribute('data-id');
+                this.getMangaDetails(mangaId, 'mangaDetailContent');
+            });
+        });
     }
 
     //получение деталей манги после нажатия на иконку с ней
@@ -228,6 +326,7 @@ class MangaCatalog{
         if(!container) return;
 
         container.innerHTML = '<div class="loading">Загрузка информации о манге...</div>';
+        document.getElementById('mangaDetail').classList.add('active');
         
         try {
             const result = await graphQLRequest(MANGA_QUERIES.details, { id: parseInt(mangaId) });
@@ -258,7 +357,7 @@ class MangaCatalog{
                 ${manga.title.english ? `<p class="english-title">${manga.title.english}</p>` : ''}
                     
                 <div class="manga-stats">
-                    <span class="score">${manga.averageScore + "/10" || 'N/A'}</span>
+                    <span class="score">${manga.averageScore + "/100" || 'N/A'}</span>
                     <span class="popularity">👥 ${manga.popularity || 0}</span>
                     <span class="status">${this.getStatusText(manga.status)}</span>
                 </div>
@@ -270,7 +369,7 @@ class MangaCatalog{
                 </div>
                     
                 <div class="manga-genres">
-                   ${manga.genres.map(genre => `<span class="genre-tag">${genre}</span>`).join('')}
+                   ${this.translateGenres(manga.genres.map(genre => `<span class="genre-tag">${genre}</span>`).join(' '))}
                 </div>
                     
                 <button class="btn-read-manga" onclick="mangaCatalog.startReading(${manga.id})">
@@ -304,17 +403,99 @@ class MangaCatalog{
     }
 
     //настройка пагинации
-    pagination(pageInfo, genres, containerId) {
+    pagination(pageInfo, genres, containerId, isSearch = false, searchTerm = '') {
         const container = document.getElementById(containerId);
         if (!container || !pageInfo || !pageInfo.hasNextPage) return;
+        
+        //удаление существующей кнопки "Загрузить еще"
+        const existingBtn = container.querySelector('.load-more-btn');
+        if (existingBtn) existingBtn.remove();
+        
         const loadMoreBtn = document.createElement('button');
         loadMoreBtn.className = 'load-more-btn';
         loadMoreBtn.innerHTML = `Загрузить еще (${pageInfo.currentPage}/${pageInfo.lastPage})`;
-        //обработчик клика для кнопки Загрузить еще
+        
+        //обработчик клика для кнопки "Загрузить еще"
         loadMoreBtn.onclick = () => {
-            this.loadByGenres(containerId, genres, pageInfo.currentPage + 1);
+            if (isSearch) {
+                this.searchManga(containerId, searchTerm, pageInfo.currentPage + 1);
+            } else if (genres.length > 0) {
+                this.loadByGenres(containerId, genres, pageInfo.currentPage + 1);
+            } else {
+                this.loadPopularManga(containerId, 24 * (pageInfo.currentPage + 1));
+            }
         };
+        
         container.appendChild(loadMoreBtn);
+    }
+
+    // Загрузка списка жанров
+    async loadGenres() {
+        const genreFilter = document.getElementById('genreFilter');
+        
+        const allBtn = document.createElement('button');
+        allBtn.className = 'genre-btn active';
+        allBtn.textContent = 'Все';
+        allBtn.addEventListener('click', () => {
+            document.querySelectorAll('.genre-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            allBtn.classList.add('active');
+            
+            this.genres = [];
+            this.currentPage = 1;
+            this.loadPopularManga('mangaContainer');
+        });
+        genreFilter.appendChild(allBtn);
+        
+        //кнопки для каждого жанра
+        MANGA_GENRES_TRANSLATED.forEach(genre => {
+            const genreBtn = document.createElement('button');
+            genreBtn.className = 'genre-btn';
+            genreBtn.textContent = genre;
+            genreBtn.addEventListener('click', () => {
+                if (genreBtn.classList.contains('active')) {
+                    genreBtn.classList.remove('active');
+                    this.genres = this.genres.filter(g => g !== genre);
+                } else {
+                    genreBtn.classList.add('active');
+                    this.genres.push(genre);
+                }
+                
+                if (this.genres.length === 0) {
+                    allBtn.classList.add('active');
+                } else {
+                    allBtn.classList.remove('active');
+                }
+                
+                this.currentPage = 1;
+                this.loadByGenres('mangaContainer', this.genres);
+            });
+            genreFilter.appendChild(genreBtn);
+        });
+    }
+
+    //перевод статуса манги
+    getStatusText(status) {
+        const statusMap = {
+            'FINISHED': 'Завершена',
+            'RELEASING': 'Выходит',
+            'NOT_YET_RELEASED': 'Скоро выйдет',
+            'CANCELLED': 'Отменена',
+            'HIATUS': 'Приостановлена'
+        };
+        return statusMap[status] || status;
+    }
+
+    //перевод формата
+    getFormatText(format) {
+        const formatMap = {
+            'MANGA': 'Манга',
+            'NOVEL': 'Новелла',
+            'ONE_SHOT': 'Ваншот',
+            'DOUJINSHI': 'Додзинси'
+        };
+        return formatMap[format] || format;
     }
 }
 

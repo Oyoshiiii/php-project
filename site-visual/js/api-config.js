@@ -3,13 +3,28 @@
 const ANILIST_API = "https://graphql.anilist.co"; //url для post запросов
 
 //жанры манги для каталога
-const MANGA_GENRES = [
-    "Action", "Adventure", "Comedy", "Drama", 
-    "Ecchi", "Fantasy", "Horror", "Mahou Shoujo",
-    "Mecha", "Music", "Mystery", "Psychological",
-    "Romance", "Sci-Fi", "Slice of Life", "Sports",
-    "Supernatural", "Thriller"
-];
+const MANGA_GENRES = Object.keys(MANGA_GENRES_TRANSLATED);
+//жанры манги с переводом
+const MANGA_GENRES_TRANSLATED = {
+    "Action": "Экшен",
+    "Adventure": "Приключения",
+    "Comedy": "Комедия",
+    "Drama": "Драма",
+    "Ecchi": "Этти",
+    "Fantasy": "Фэнтези",
+    "Horror": "Ужасы",
+    "Mahou Shoujo": "Махо-сёдзё",
+    "Mecha": "Меха",
+    "Music": "Музыка",
+    "Mystery": "Мистика",
+    "Psychological": "Психологическое",
+    "Romance": "Романтика",
+    "Sci-Fi": "Научная фантастика",
+    "Slice of Life": "Повседневность",
+    "Sports": "Спорт",
+    "Supernatural": "Сверхъестественное",
+    "Thriller": "Триллер"
+};
 
 //асинхронная функция для работы с Anilist через graphQL
 async function graphQLRequest(query, variables = {}){
