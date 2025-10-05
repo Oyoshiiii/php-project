@@ -14,19 +14,13 @@ require("blocks/header.php");
 <body>
 
     <div class="container">
-        <!-- Фильтры для манги -->
         <div class="catalog-filters">
             <div class="filter-row">
                 <div class="filter-group">
                     <label for="genre">Жанр</label>
                     <select id="genre">
                         <option value="">Все жанры</option>
-                        <option value="shonen">Сёнэн</option>
-                        <option value="shoujo">Сёдзё</option>
-                        <option value="seinen">Сэйнэн</option>
-                        <option value="fantasy">Фэнтези</option>
-                        <option value="romance">Романтика</option>
-                        <option value="action">Экшен</option>
+                        <!--жанры будут добавлены здесь-->
                     </select>
                 </div>
                 <div class="filter-group">
@@ -51,74 +45,100 @@ require("blocks/header.php");
                 </div>
             </div>
             <div class="search-box">
-                <input type="text" placeholder="Поиск манги...">
-                <button>Найти</button>
+                <input type="text" placeholder="Поиск манги..." id="search-input">
+                <button id="search-btn">Найти</button>
             </div>
         </div>
-        <div>
-            <style>
-                .manga-catalog {
-                display: grid; 
-                grid-template-columns: repeat(4, 1fr); 
-                gap: 1em;
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                grid-column-gap: 0px;
-                grid-row-gap: 0px;
-                }
+        
+        <div id="manga-container" class="manga-catalog">
+            <!--манга будет загружена здесь-->
+        </div>
 
-                .manga-catalog > div {
-                background-color: #c25f5fff; 
-                padding: 1em;
-                text-align: center;
-                }
-            </style>
-            <div class="manga-catalog"> <!--Позже доделаю, пока просто проверка-->
-                <div>test</div>
-                <div>test</div>
-                <div>test</div>
-                <div>test</div>
-                <div>test</div>
+        <!--детальная инфа о манге-->
+        <div id="mangaDetail" class="manga-detail" style="display: none;">
+            <button class="close-btn" id="closeDetail">&times;</button>
+            <div class="manga-detail-content" id="mangaDetailContent">
+                <!--детали манги будут отображаться здесь-->
             </div>
         </div>
     </div>
+
+    <!--подключение скриптов-->
+    <script src="js/manga-catalog.js"></script>
+
     <script>
-        // заглушка для фильтров
-        document.querySelectorAll('.catalog-filters select').forEach(select => {
-            select.addEventListener('change', function() {
-                // В реальном приложении здесь будет фильтрация манги
-                console.log(`Фильтр изменен: ${this.id} = ${this.value}`);
+        document.addEventListener('DOMContentLoaded', function(){
+            console.log('DOM загружен, инициализация каталога...');
+            //инициализация жанров в фильтре
+            initializeGenreFilter();
+            
+            //настройка обработчиков
+            mangaCatalog.setupEventListeners();
+            
+            //загрузка популярной манги
+            mangaCatalog.loadPopularManga('manga-container', 12);
+            
+            setupFilters();
+        });
+
+        //инициализация фильтра жанров
+        function initializeGenreFilter() {
+            const genreSelect = document.getElementById('genre');
+            
+            //очищаем существующие опции (кроме "Все жанры")
+            while (genreSelect.children.length > 1) {
+                genreSelect.removeChild(genreSelect.lastChild);
+            }
+            
+            //добавляем жанры из MANGA_GENRES_TRANSLATED
+            if (typeof MANGA_GENRES_TRANSLATED !== 'undefined') {
+                Object.keys(MANGA_GENRES_TRANSLATED).forEach(genreKey => {
+                    const option = document.createElement('option');
+                    option.value = genreKey;
+                    option.textContent = MANGA_GENRES_TRANSLATED[genreKey];
+                    genreSelect.appendChild(option);
+                });
+            } else {
+                console.error('MANGA_GENRES_TRANSLATED не определен');
+            }
+        }
+
+        function setupFilters(){
+            const genresSelected = document.getElementById('genre');
+            genresSelected.addEventListener('change', function(){
+                const genre = this.value;
+                console.log('Выбран жанр:', genre);
+                if(genre){
+                    mangaCatalog.loadByGenres('manga-container', [genre]);
+                }
+                else{
+                    mangaCatalog.loadPopularManga('manga-container', 12);
+                }
             });
-        });
-        
-        // Обработка поиска
-        document.querySelector('.search-box button').addEventListener('click', function() {
-            const searchInput = this.parentElement.querySelector('input');
-            const searchTerm = searchInput.value.trim();
-            if (searchTerm !== '') {
-                alert(`Поиск манги: "${searchTerm}"\n\n(В реальном приложении здесь будет поиск по каталогу)`);
-            }
-        });
-        
-        // Обработка добавления в корзину
-        document.querySelectorAll('.btn-primary').forEach(button => {
-            if (button.textContent === 'В корзину') {
-                button.addEventListener('click', function() {
-                    const mangaTitle = this.closest('.item-info').querySelector('.item-title').textContent;
-                    alert(`Манга "${mangaTitle}" добавлена в корзину!`);
-                });
-            }
-        });
-        
-        // Обработка кнопки "Подробнее"
-        document.querySelectorAll('.btn-outline').forEach(button => {
-            if (button.textContent === 'Подробнее') {
-                button.addEventListener('click', function() {
-                    const mangaTitle = this.closest('.item-info').querySelector('.item-title').textContent;
-                    alert(`Открывается страница с подробной информацией о "${mangaTitle}"\n\n(Здесь будет переход на страницу товара)`);
-                });
-            }
-        });
+
+            //добавляем отладку для поиска
+            const search = document.getElementById('search-btn');
+
+            search.addEventListener('click', function(){
+                const searchInput = document.getElementById('search-input');
+                const searchInputValue = searchInput.value.trim();
+                console.log('Поиск:', searchInputValue);
+                if(searchInputValue !== ''){
+                    mangaCatalog.searchManga('manga-container', searchInputValue);
+                }
+            });
+
+            //заглушки для нереализованных фильтров
+            document.getElementById('status').addEventListener('change', function() {
+                console.log('Статус изменен:', this.value);
+                alert('Фильтр по статусу пока не реализован');
+            });
+
+            document.getElementById('year').addEventListener('change', function() {
+                console.log('Год изменен:', this.value);
+                alert('Фильтр по году пока не реализован');
+            });
+        }
     </script>
 </body>
 </html>

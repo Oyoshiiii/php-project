@@ -1,3 +1,67 @@
+//жанры манги с переводом
+const MANGA_GENRES_TRANSLATED = {
+    "Action": "Экшен",
+    "Adventure": "Приключения",
+    "Comedy": "Комедия",
+    "Drama": "Драма",
+    "Ecchi": "Этти",
+    "Fantasy": "Фэнтези",
+    "Horror": "Ужасы",
+    "Mahou Shoujo": "Махо-сёдзё",
+    "Mecha": "Меха",
+    "Music": "Музыка",
+    "Mystery": "Мистика",
+    "Psychological": "Психологическое",
+    "Romance": "Романтика",
+    "Sci-Fi": "Научная фантастика",
+    "Slice of Life": "Повседневность",
+    "Sports": "Спорт",
+    "Supernatural": "Сверхъестественное",
+    "Thriller": "Триллер"
+};
+
+//жанры манги для каталога
+const MANGA_GENRES = Object.keys(MANGA_GENRES_TRANSLATED);
+
+//все ответы будут на английском языке, русского перевода в api нет
+const ANILIST_API = "https://graphql.anilist.co"; //url для post запросов
+
+//асинхронная функция для работы с Anilist через graphQL
+async function graphQLRequest(query, variables = {}){
+    try{
+        //формирование ответа
+        const response = await fetch(ANILIST_API, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                query: query,
+                variables: variables
+            })
+        })
+
+        if(!response.ok){
+            throw new Error(`Ошибка HTTP, статус: ${response.status}`);
+        }
+
+        //преобразование данных ответа в json
+        const data = await response.json();
+
+        if(data.errors){
+            console.error('Ошибки GraphQL:', data.errors);
+            throw new Error(data.errors[0].message);
+        }
+
+        return data;
+    }
+    catch(error){
+        console.error("Ошибка с запросом к API", error);
+        throw error;
+    }
+}
+
 //заготовки запросов
 const MANGA_QUERIES = {
     //по популярности
@@ -159,7 +223,7 @@ class MangaCatalog{
     }
     //настройка обработчика событий
     setupEventListeners() {
-        const searchInput = document.getElementById('searchInput');
+        const searchInput = document.getElementById('search-input');
         let searchTimeout;
         
         searchInput.addEventListener('input', (e) => {
@@ -171,9 +235,9 @@ class MangaCatalog{
                 
                 if (this.currentSearch.trim() === '') {
                     this.isSearching = false;
-                    this.loadPopularManga('mangaContainer');
+                    this.loadPopularManga('manga-container');
                 } else {
-                    this.searchManga('mangaContainer', this.currentSearch);
+                    this.searchManga('manga-container', this.currentSearch);
                 }
             }, 500);
         });
@@ -197,8 +261,14 @@ class MangaCatalog{
     //подгружает еще несколько популярных манг (максимальное кол-во 12) 
     //для общей подборки (не по категориям)
     async loadPopularManga(containerId, maxManga = 12){
+        console.log('loadPopularManga called with:', containerId, maxManga);
         const container = document.getElementById(containerId);
-        if (!container) return;
+        console.log('Container found:', container);
+    
+        if (!container) {
+            console.error('Container not found:', containerId);
+            return;
+        }
         
         //класс loading условный, его можно поменять вдальнейшем
         /*
@@ -228,6 +298,8 @@ class MangaCatalog{
     async loadByGenres(containerId, genres = [], page = 1, perPage = 24) {
         const container = document.getElementById(containerId);
         if (!container) return;
+
+        console.log('loadByGenres called with:', containerId, genres, page);
 
         try {
             const result = await graphQLRequest(MANGA_QUERIES.byGenres, {
@@ -284,33 +356,30 @@ class MangaCatalog{
 
     //вывод манги в кратком отображении для грида
     //опять же весь визуал условный, его можно менять
-    showMangaGrid(mangaList, container, clearContainer) {
+    // В классе MangaCatalog исправляем метод showMangaGrid:
+    showMangaGrid(mangaList, container, clearContainer = true) {
         if (!mangaList || mangaList.length === 0) {
             if (clearContainer) {
                 container.innerHTML = '<p class="no-results">Манга не найдена</p>';
             }
             return;
         }
-        
-        if (clearContainer) {
-            container.innerHTML = '';
-        }
-
-        container.innerHTML = mangaList.map(manga => `
+    
+        const mangaHTML = mangaList.map(manga => `
             <div class="manga-card" data-id="${manga.id}">
                 <img src="${manga.coverImage.large}" alt="${manga.title.romaji || manga.title.english}">
                 <h3>${manga.title.romaji || manga.title.english}</h3>
-                <p>${manga.averageScore + '/100' || 'N/A'}</p>
-                <p>${this.translateGenres(manga.genres.slice(0, 3).join(', '))}</p>
+                <p>⭐ ${manga.averageScore || 'N/A'}/100</p>
+                <p>${this.translateGenres(manga.genres).slice(0, 3).join(', ')}</p>
             </div>
         `).join('');
 
-         if (clearContainer) {
+        if (clearContainer) {
             container.innerHTML = mangaHTML;
         } else {
             container.innerHTML += mangaHTML;
         }
-        
+    
         //обработчики событий для карточек манги
         container.querySelectorAll('.manga-card').forEach(card => {
             card.addEventListener('click', () => {
