@@ -294,6 +294,7 @@ class MangaCatalog{
         }
     }
 
+
     //загрузка манги по жанрам
     async loadByGenres(containerId, genres = [], page = 1, perPage = 24) {
         const container = document.getElementById(containerId);
