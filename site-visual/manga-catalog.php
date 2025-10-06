@@ -44,7 +44,7 @@ require("blocks/header.php");
                     </select>
                 </div>
             </div>
-            <div class="search-box">
+            <div class="search-box" id="searchInput">
                 <input type="text" placeholder="Поиск манги..." id="search-input">
                 <button id="search-btn">Найти</button>
             </div>
@@ -431,6 +431,12 @@ require("blocks/header.php");
             });
         }
     </script>
+    <script src="js/manga-catalog.js"></script>
+            <script>
+                const mangaCatalog = new MangaCatalog();
+                mangaCatalog.loadPopularManga('mangaContainer');
+            </script>
+
 </body>
 </html>
 
