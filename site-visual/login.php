@@ -38,6 +38,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['username'] = $user['username'];
                     $_SESSION['email'] = $user['email'];
                     
+                    // Сохраняем данные в куки на 30 дней
+                    setcookie('user_username', $user['username'], time() + (30 * 24 * 60 * 60), "/");
+                    setcookie('user_email', $user['email'], time() + (30 * 24 * 60 * 60), "/");
+                    setcookie('user_number', $user['number'], time() + (30 * 24 * 60 * 60), "/");
+                    setcookie('user_id', $user['id'], time() + (30 * 24 * 60 * 60), "/");
+                    
                     $success = "Успешный вход!";
                     header("Location: index.php");
                     exit();
@@ -54,13 +60,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Заполните все поля!";
     }
 }
+
+// Получаем данные из куки для автозаполнения
+$saved_username = $_COOKIE['user_username'] ?? '';
+$saved_email = $_COOKIE['user_email'] ?? '';
+$saved_number = $_COOKIE['user_number'] ?? '';
 ?>
 <html>
-    <header>
+    <head>
         <meta charset="utf-8">
         <title>Login</title>
         <link rel="stylesheet" href="css/login.css">
-    </header>
+    </head>
     <body>
     <div class="container">
         <header>
@@ -82,7 +93,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <h2 class="form-title">Вход по Email</h2>
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input type="email" id="email" name="identifier" placeholder="Введите ваш email" required>
+                        <input type="email" id="email" name="identifier" 
+                               placeholder="Введите ваш email" 
+                               value="<?php echo htmlspecialchars($saved_email); ?>" 
+                               required>
                     </div>
                     <div class="form-group">
                         <label for="password1">Пароль</label>
@@ -100,7 +114,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <h2 class="form-title">Вход по номеру</h2>
                     <div class="form-group">
                         <label for="number">Номер телефона</label>
-                        <input type="text" id="number" name="identifier" placeholder="Введите ваш номер" required>
+                        <input type="text" id="number" name="identifier" 
+                               placeholder="Введите ваш номер" 
+                               value="<?php echo htmlspecialchars($saved_number); ?>" 
+                               required>
                     </div>
                     <div class="form-group">
                         <label for="password2">Пароль</label>
@@ -118,6 +135,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </button>
         
         <a class="instructions" href="registrate.php">Зарегистрироваться</a>
+        
+        <?php if (!empty($saved_username)): ?>
+            <div class="welcome-back">
+                С возвращением, <?php echo htmlspecialchars($saved_username); ?>!
+            </div>
+        <?php endif; ?>
         
         <footer>
         </footer>
