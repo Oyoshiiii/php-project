@@ -136,12 +136,6 @@ $saved_number = $_COOKIE['user_number'] ?? '';
         
         <a class="instructions" href="registrate.php">Зарегистрироваться</a>
         
-        <?php if (!empty($saved_username)): ?>
-            <div class="welcome-back">
-                С возвращением, <?php echo htmlspecialchars($saved_username); ?>!
-            </div>
-        <?php endif; ?>
-        
         <footer>
         </footer>
     </div>

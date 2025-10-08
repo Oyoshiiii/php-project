@@ -49,297 +49,24 @@ require("blocks/header.php");
         </div>
 
         <div>
-            <style>
-
-        .genre-filter {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-
-        .genre-btn {
-            padding: 8px 15px;
-            background-color: #0f3460;
-            color: #e6e6e6;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .genre-btn:hover {
-            background-color: #16213e;
-        }
-
-        .genre-btn.active {
-            background-color: #e94560;
-        }
-
-        .manga-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        .manga-card {
-            background-color: #16213e;
-            border-radius: 10px;
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            cursor: pointer;
-        }
-
-        .manga-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        .manga-card img {
-            width: 100%;
-            height: 280px;
-            object-fit: cover;
-        }
-
-        .manga-card-content {
-            padding: 15px;
-        }
-
-        .manga-card h3 {
-            font-size: 1rem;
-            margin-bottom: 8px;
-            height: 40px;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-        }
-
-        .manga-card p {
-            font-size: 0.9rem;
-            color: #b8b8b8;
-            margin-bottom: 5px;
-        }
-
-        .score {
-            color: #e94560;
-            font-weight: bold;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            font-size: 1.2rem;
-            color: #e94560;
-        }
-
-        .error {
-            text-align: center;
-            padding: 40px;
-            font-size: 1.2rem;
-            color: #ff6b6b;
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 40px;
-            font-size: 1.2rem;
-            color: #b8b8b8;
-            grid-column: 1 / -1;
-        }
-
-        .load-more-btn {
-            display: block;
-            margin: 30px auto;
-            padding: 12px 25px;
-            background-color: #e94560;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .load-more-btn:hover {
-            background-color: #ff6b6b;
-        }
-
-        .manga-detail {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .manga-detail.active {
-            display: block;
-        }
-
-        .manga-detail-content {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 30px;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 2rem;
-            cursor: pointer;
-        }
-
-        .manga-detail-header {
-            display: flex;
-            gap: 30px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-
-        .manga-poster {
-            flex: 0 0 250px;
-        }
-
-        .manga-poster img {
-            width: 100%;
-            border-radius: 10px;
-        }
-
-        .manga-header-info {
-            flex: 1;
-            min-width: 300px;
-        }
-
-        .manga-header-info h1 {
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-        }
-
-        .english-title {
-            font-style: italic;
-            color: #b8b8b8;
-            margin-bottom: 15px;
-        }
-
-        .manga-stats {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .manga-stats span {
-            background-color: #0f3460;
-            padding: 5px 10px;
-            border-radius: 5px;
-        }
-
-        .manga-meta {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .manga-genres {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .genre-tag {
-            background-color: #e94560;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-        }
-
-        .btn-read-manga, .btn-anilist {
-            display: inline-block;
-            padding: 10px 20px;
-            margin-right: 10px;
-            margin-bottom: 10px;
-            background-color: #e94560;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn-anilist {
-            background-color: #0f3460;
-        }
-
-        .btn-read-manga:hover, .btn-anilist:hover {
-            background-color: #ff6b6b;
-        }
-
-        .manga-description {
-            margin-bottom: 30px;
-            line-height: 1.8;
-        }
-
-        .manga-characters h2 {
-            margin-bottom: 15px;
-        }
-
-        .characters-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 15px;
-        }
-
-        .character-card {
-            text-align: center;
-        }
-
-        .character-card img {
-            width: 100%;
-            border-radius: 10px;
-            margin-bottom: 8px;
-        }
-
-        .character-card p {
-            font-size: 0.9rem;
-        }
-
-        @media (max-width: 768px) {
-            .manga-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            }
-
-            .manga-detail-header {
-                flex-direction: column;
-            }
-
-            .manga-poster {
-                flex: 0 0 auto;
-                max-width: 250px;
-                margin: 0 auto;
-            }
-        }
-            </style>
-            
             <div id="manga-container" class="manga-catalog">
                 <!--манга будет загружена здесь-->
             </div>
+
+            <div id="pagination" class="pagination">
+            <!-- Кнопки пагинации будут добавлены через JavaScript -->
+            </div>
+
+            <!--детальная инфа о манге-->
+            <div id="mangaDetail" class="manga-detail">
+            <div class="manga-detail-overlay"></div>
+            <div class="manga-detail-modal">
+                <button class="close-btn" id="closeDetail">&times;</button>
+                <div class="manga-detail-content" id="mangaDetailContent">
+                    <!-- Детали манги будут отображаться здесь -->
+                </div>
+            </div>
         </div>
-    </div>
-    <div id="mangaDetail" class="manga-detail">
-        <button id="closeDetail" class="close-btn">×</button>
-        <div id="mangaDetailContent" class="manga-detail-content">
-            <!--детали будут загружены здесь-->
         </div>
     </div>
 
@@ -347,18 +74,18 @@ require("blocks/header.php");
     <script src="js/manga-catalog.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function(){
+        document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM загружен, инициализация каталога...');
-            //инициализация жанров в фильтре
+            
             initializeGenreFilter();
-            //инициализация статусов в фильтре
             initializeStatusFilter();
             
-            //настройка обработчиков
-            mangaCatalog.setupEventListeners();
-            
-            //загрузка популярной манги
-            mangaCatalog.loadPopularManga('manga-container', 12);
+            if (typeof mangaCatalog !== 'undefined') {
+                mangaCatalog.setupEventListeners();
+                mangaCatalog.loadPopularManga('manga-container', 12);
+            } else {
+                console.error('mangaCatalog не инициализирован');
+            }
             
             setupFilters();
         });
@@ -406,75 +133,75 @@ require("blocks/header.php");
             }
         }
 
-         function setupFilters(){
-        const genresSelected = document.getElementById('genre');
+        function setupFilters(){
+            const genresSelected = document.getElementById('genre');
 
-        genresSelected.addEventListener('change', function(){
-            const genre = this.value;
-            console.log('Выбран жанр:', genre);
-            if(genre){
-                mangaCatalog.currentFilters.genres = [genre];
-                mangaCatalog.currentFilters.status = document.getElementById('status').value;
+            genresSelected.addEventListener('change', function(){
+                const genre = this.value;
+                console.log('Выбран жанр:', genre);
+                if(genre){
+                    mangaCatalog.currentFilters.genres = [genre];
+                    mangaCatalog.currentFilters.status = document.getElementById('status').value;
+                    mangaCatalog.currentFilters.year = document.getElementById('year').value;
+                    mangaCatalog.applyFilters('manga-container');
+                }
+                else{
+                    mangaCatalog.loadPopularManga('manga-container', 12);
+                }
+            });
+
+            const search = document.getElementById('search-btn');
+
+            search.addEventListener('click', function(){
+                const searchInput = document.getElementById('search-input');
+                const searchInputValue = searchInput.value.trim();
+                console.log('Поиск:', searchInputValue);
+                if(searchInputValue !== ''){
+                    mangaCatalog.currentFilters.search = searchInputValue;
+                    mangaCatalog.applyFilters('manga-container');
+                }
+            });
+
+            const statusSelected = document.getElementById('status');
+
+            statusSelected.addEventListener('change', function() {
+                console.log('Статус изменен:', this.value);
+                mangaCatalog.currentFilters.status = this.value;
+                mangaCatalog.currentFilters.genres = document.getElementById('genre').value ? [document.getElementById('genre').value] : [];
                 mangaCatalog.currentFilters.year = document.getElementById('year').value;
                 mangaCatalog.applyFilters('manga-container');
-            }
-            else{
-                mangaCatalog.loadPopularManga('manga-container', 12);
-            }
-        });
+            });
 
-        const search = document.getElementById('search-btn');
-
-        search.addEventListener('click', function(){
-            const searchInput = document.getElementById('search-input');
-            const searchInputValue = searchInput.value.trim();
-            console.log('Поиск:', searchInputValue);
-            if(searchInputValue !== ''){
-                mangaCatalog.currentFilters.search = searchInputValue;
+            document.getElementById('year').addEventListener('change', function() {
+                const selectedYear = this.value;
+                console.log('Год изменен:', selectedYear);
+                
+                let rangeDescription = '';
+                switch(selectedYear) {
+                    case "2020":
+                        rangeDescription = "2020+ года";
+                        break;
+                    case "2010":
+                        rangeDescription = "2010-2019 года";
+                        break;
+                    case "2000":
+                        rangeDescription = "2000-2009 года";
+                        break;
+                    case "1990":
+                        rangeDescription = "1990-1999 года";
+                        break;
+                    case "1980":
+                        rangeDescription = "1980-1989 года";
+                        break;
+                    default:
+                        rangeDescription = "все года";
+                }
+                console.log('Ищем мангу за:', rangeDescription);
+                
+                mangaCatalog.currentFilters.year = selectedYear;
+                mangaCatalog.currentFilters.genres = document.getElementById('genre').value ? [document.getElementById('genre').value] : [];
+                mangaCatalog.currentFilters.status = document.getElementById('status').value;
                 mangaCatalog.applyFilters('manga-container');
-            }
-        });
-
-        const statusSelected = document.getElementById('status');
-
-        statusSelected.addEventListener('change', function() {
-            console.log('Статус изменен:', this.value);
-            mangaCatalog.currentFilters.status = this.value;
-            mangaCatalog.currentFilters.genres = document.getElementById('genre').value ? [document.getElementById('genre').value] : [];
-            mangaCatalog.currentFilters.year = document.getElementById('year').value;
-            mangaCatalog.applyFilters('manga-container');
-        });
-
-        document.getElementById('year').addEventListener('change', function() {
-            const selectedYear = this.value;
-            console.log('Год изменен:', selectedYear);
-            
-            let rangeDescription = '';
-            switch(selectedYear) {
-                case "2020":
-                    rangeDescription = "2020+ года";
-                    break;
-                case "2010":
-                    rangeDescription = "2010-2019 года";
-                    break;
-                case "2000":
-                    rangeDescription = "2000-2009 года";
-                    break;
-                case "1990":
-                    rangeDescription = "1990-1999 года";
-                    break;
-                case "1980":
-                    rangeDescription = "1980-1989 года";
-                    break;
-                default:
-                    rangeDescription = "все года";
-            }
-            console.log('Ищем мангу за:', rangeDescription);
-            
-            mangaCatalog.currentFilters.year = selectedYear;
-            mangaCatalog.currentFilters.genres = document.getElementById('genre').value ? [document.getElementById('genre').value] : [];
-            mangaCatalog.currentFilters.status = document.getElementById('status').value;
-            mangaCatalog.applyFilters('manga-container');
         });
     }
     </script>
