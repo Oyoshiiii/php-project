@@ -410,67 +410,66 @@ class MangaCatalog{
     }
 
     //отображение деталей манги уже на сайте
-    displayMangaDetails(manga, container){
-        const description = manga.description;
-        if(description.trim() === ''){
-            description = "Описание отсутствует";
-        }
-
-        //этот html код тоже по сути надо, чтобы Даниил глянул
-        container.innerHTML = `
-        <div class="manga-detail-header" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${manga.bannerImage || manga.coverImage.extraLarge}')">
-            <div class="manga-poster">
-                <img src="${manga.coverImage.extraLarge}" alt="${manga.title.romaji}">
-            </div>
-            <div class="manga-header-info">
-                <h1>${manga.title.romaji || manga.title.english}</h1>
-                ${manga.title.english ? `<p class="english-title">${manga.title.english}</p>` : ''}
-                    
-                <div class="manga-stats">
-                    <span class="score">${manga.averageScore + "/100" || 'N/A'}</span>
-                    <span class="popularity">👥 ${manga.popularity || 0}</span>
-                    <span class="status">${this.getStatusText(manga.status)}</span>
-                </div>
-                    
-                <div class="manga-meta">
-                    <span>Глав: ${manga.chapters || 'Неизвестно'}</span>
-                    <span>Томов: ${manga.volumes || 'Неизвестно'}</span>
-                    <span>Формат: ${this.getFormatText(manga.format)}</span>
-                </div>
-                    
-                <div class="manga-genres">
-                   ${this.translateGenres(manga.genres.map(genre => `<span class="genre-tag">${genre}</span>`).join(' '))}
-                </div>
-                    
-                <button class="btn-read-manga" onclick="mangaCatalog.startReading(${manga.id})">
-                    📖 Начать читать
-                </button>
-                ${manga.siteUrl ? `<a href="${manga.siteUrl}" target="_blank" class="btn-anilist">🔗 AniList</a>` : ''}
-            </div>
-        </div>
-            
-        <div class="manga-detail-content">
-            <section class="manga-description">
-                <h2>📝 Описание</h2>
-                <p>${description}</p>
-            </section>
+    displayMangaDetails(manga, container) {
+                // Очистка описания от HTML тегов
+                const cleanDescription = manga.description 
+                    ? manga.description.replace(/<[^>]*>/g, '') 
+                    : "Описание отсутствует";
                 
-            ${manga.characters && manga.characters.nodes.length > 0 ? `
-            <section class="manga-characters">
-                <h2>👥 Персонажи</h2>
-                <div class="characters-grid">
-                    ${manga.characters.nodes.slice(0, 6).map(character => `
-                        <div class="character-card">
-                            <img src="${character.image.large}" alt="${character.name.full}">
-                            <p>${character.name.full}</p>
+                container.innerHTML = `
+                    <div class="manga-detail-header">
+                        <div class="manga-poster">
+                            <img src="${manga.coverImage.extraLarge}" alt="${manga.title.romaji}">
                         </div>
-                    `).join('')}
-                </div>
-            </section>
-            ` : ''}
-        </div>
-        `;
-    }
+                        <div class="manga-header-info">
+                            <h1>${manga.title.romaji || manga.title.english}</h1>
+                            ${manga.title.english ? `<p class="english-title">${manga.title.english}</p>` : ''}
+                            
+                            <div class="manga-stats">
+                                <span class="score">⭐ ${manga.averageScore || 'N/A'}/100</span>
+                                <span class="popularity">👥 ${manga.popularity || 0}</span>
+                                <span class="status">${this.getStatusText(manga.status)}</span>
+                            </div>
+                            
+                            <div class="manga-meta">
+                                <span>Глав: ${manga.chapters || 'Неизвестно'}</span>
+                                <span>Томов: ${manga.volumes || 'Неизвестно'}</span>
+                                <span>Формат: ${this.getFormatText(manga.format)}</span>
+                            </div>
+                            
+                            <div class="manga-genres">
+                               ${manga.genres.map(genre => `<span class="genre-tag">${genre}</span>`).join('')}
+                            </div>
+                            
+                            <button class="btn-read-manga" onclick="mangaCatalog.startReading(${manga.id})">
+                                📖 Начать читать
+                            </button>
+                            ${manga.siteUrl ? `<a href="${manga.siteUrl}" target="_blank" class="btn-anilist">🔗 AniList</a>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="manga-detail-content">
+                        <section class="manga-description">
+                            <h2>📝 Описание</h2>
+                            <p>${cleanDescription}</p>
+                        </section>
+                        
+                        ${manga.characters && manga.characters.nodes.length > 0 ? `
+                        <section class="manga-characters">
+                            <h2>👥 Персонажи</h2>
+                            <div class="characters-grid">
+                                ${manga.characters.nodes.slice(0, 6).map(character => `
+                                    <div class="character-card">
+                                        <img src="${character.image.large}" alt="${character.name.full}">
+                                        <p>${character.name.full}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </section>
+                        ` : ''}
+                    </div>
+                `;
+            }
 
     //настройка пагинации
     pagination(pageInfo, genres, containerId, isSearch = false, searchTerm = '') {
