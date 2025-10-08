@@ -27,9 +27,7 @@ require("blocks/header.php");
                     <label for="status">Статус</label>
                     <select id="status">
                         <option value="">Любой статус</option>
-                        <option value="ongoing">Публикуется</option>
-                        <option value="completed">Завершена</option>
-                        <option value="hiatus">На паузе</option>
+                        <!--статусы будут добавлены здесь-->
                     </select>
                 </div>
                 <div class="filter-group">
@@ -336,21 +334,12 @@ require("blocks/header.php");
             <div id="manga-container" class="manga-catalog">
                 <!--манга будет загружена здесь-->
             </div>
-
-            <!--детальная инфа о манге-->
-            <div id="mangaDetail" class="manga-detail" style="display: none;">
-                <button class="close-btn" id="closeDetail">&times;</button>
-                <div class="manga-detail-content" id="mangaDetailContent">
-                    <!--детали манги будут отображаться здесь-->
-                </div>
-            </div>
-
-            <div id="mangaDetail" class="manga-detail">
-                <button class="close-btn" id="closeDetail">&times;</button>
-                <div class="manga-detail-content" id="mangaDetailContent">
-                    <!-- Детали манги будут отображаться здесь -->
-                </div>
-            </div>
+        </div>
+    </div>
+    <div id="mangaDetail" class="manga-detail">
+        <button id="closeDetail" class="close-btn">×</button>
+        <div id="mangaDetailContent" class="manga-detail-content">
+            <!--детали будут загружены здесь-->
         </div>
     </div>
 
@@ -362,6 +351,8 @@ require("blocks/header.php");
             console.log('DOM загружен, инициализация каталога...');
             //инициализация жанров в фильтре
             initializeGenreFilter();
+            //инициализация статусов в фильтре
+            initializeStatusFilter();
             
             //настройка обработчиков
             mangaCatalog.setupEventListeners();
@@ -394,49 +385,99 @@ require("blocks/header.php");
             }
         }
 
-        function setupFilters(){
-            const genresSelected = document.getElementById('genre');
-            genresSelected.addEventListener('change', function(){
-                const genre = this.value;
-                console.log('Выбран жанр:', genre);
-                if(genre){
-                    mangaCatalog.loadByGenres('manga-container', [genre]);
-                }
-                else{
-                    mangaCatalog.loadPopularManga('manga-container', 12);
-                }
-            });
+        //инициализация фильтра статусов
+        function initializeStatusFilter(){
+            const statusSelect = document.getElementById('status');
 
-            //добавляем отладку для поиска
-            const search = document.getElementById('search-btn');
+            //очищаем существующие опции (кроме "Любой статус")
+            while (statusSelect.children.length > 1) {
+                statusSelect.removeChild(statusSelect.lastChild);
+            }
 
-            search.addEventListener('click', function(){
-                const searchInput = document.getElementById('search-input');
-                const searchInputValue = searchInput.value.trim();
-                console.log('Поиск:', searchInputValue);
-                if(searchInputValue !== ''){
-                    mangaCatalog.searchManga('manga-container', searchInputValue);
-                }
-            });
-
-            //заглушки для нереализованных фильтров
-            document.getElementById('status').addEventListener('change', function() {
-                console.log('Статус изменен:', this.value);
-                alert('Фильтр по статусу пока не реализован');
-            });
-
-            document.getElementById('year').addEventListener('change', function() {
-                console.log('Год изменен:', this.value);
-                alert('Фильтр по году пока не реализован');
-            });
+            if (typeof MANGA_STATUS_TRANSLATED !== 'undefined') {
+                Object.keys(MANGA_STATUS_TRANSLATED).forEach(statusKey => {
+                    const option = document.createElement('option');
+                    option.value = statusKey;
+                    option.textContent = MANGA_STATUS_TRANSLATED[statusKey];
+                    statusSelect.appendChild(option);
+                });
+            } else {
+                console.error('MANGA_STATUS_TRANSLATED не определен');
+            }
         }
-    </script>
-    <script src="js/manga-catalog.js"></script>
-            <script>
-                const mangaCatalog = new MangaCatalog();
-                mangaCatalog.loadPopularManga('mangaContainer');
-            </script>
 
+         function setupFilters(){
+        const genresSelected = document.getElementById('genre');
+
+        genresSelected.addEventListener('change', function(){
+            const genre = this.value;
+            console.log('Выбран жанр:', genre);
+            if(genre){
+                mangaCatalog.currentFilters.genres = [genre];
+                mangaCatalog.currentFilters.status = document.getElementById('status').value;
+                mangaCatalog.currentFilters.year = document.getElementById('year').value;
+                mangaCatalog.applyFilters('manga-container');
+            }
+            else{
+                mangaCatalog.loadPopularManga('manga-container', 12);
+            }
+        });
+
+        const search = document.getElementById('search-btn');
+
+        search.addEventListener('click', function(){
+            const searchInput = document.getElementById('search-input');
+            const searchInputValue = searchInput.value.trim();
+            console.log('Поиск:', searchInputValue);
+            if(searchInputValue !== ''){
+                mangaCatalog.currentFilters.search = searchInputValue;
+                mangaCatalog.applyFilters('manga-container');
+            }
+        });
+
+        const statusSelected = document.getElementById('status');
+
+        statusSelected.addEventListener('change', function() {
+            console.log('Статус изменен:', this.value);
+            mangaCatalog.currentFilters.status = this.value;
+            mangaCatalog.currentFilters.genres = document.getElementById('genre').value ? [document.getElementById('genre').value] : [];
+            mangaCatalog.currentFilters.year = document.getElementById('year').value;
+            mangaCatalog.applyFilters('manga-container');
+        });
+
+        document.getElementById('year').addEventListener('change', function() {
+            const selectedYear = this.value;
+            console.log('Год изменен:', selectedYear);
+            
+            let rangeDescription = '';
+            switch(selectedYear) {
+                case "2020":
+                    rangeDescription = "2020+ года";
+                    break;
+                case "2010":
+                    rangeDescription = "2010-2019 года";
+                    break;
+                case "2000":
+                    rangeDescription = "2000-2009 года";
+                    break;
+                case "1990":
+                    rangeDescription = "1990-1999 года";
+                    break;
+                case "1980":
+                    rangeDescription = "1980-1989 года";
+                    break;
+                default:
+                    rangeDescription = "все года";
+            }
+            console.log('Ищем мангу за:', rangeDescription);
+            
+            mangaCatalog.currentFilters.year = selectedYear;
+            mangaCatalog.currentFilters.genres = document.getElementById('genre').value ? [document.getElementById('genre').value] : [];
+            mangaCatalog.currentFilters.status = document.getElementById('status').value;
+            mangaCatalog.applyFilters('manga-container');
+        });
+    }
+    </script>
 </body>
 </html>
 
