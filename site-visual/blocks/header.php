@@ -32,7 +32,7 @@
                         <li><a href="index.php">Главная</a></li>
                         <li><a href="merch-catalog.php">Магазин</a></li>
                         <li><a href="manga-catalog.php">Манга</a></li>
-                        <li><a href="profile_template.php">Энциклопедия</a></li>
+                        <li><a href="profile.php">Энциклопедия</a></li>
                         <li><a href="#">Новости</a></li>
                         <li><a href="about.php">О нас</a></li>
                     </ul>
