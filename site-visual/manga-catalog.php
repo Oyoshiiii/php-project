@@ -71,6 +71,7 @@ require("blocks/header.php");
     </div>
 
     <!--подключение скриптов-->
+    <script src="js/read-manga.js"></script>
     <script src="js/manga-catalog.js"></script>
 
     <script>

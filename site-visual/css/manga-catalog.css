@@ -797,3 +797,528 @@
                 margin: 0 auto;
             }
         }
+
+
+/*
+--------->
+*/
+/* Стили для читалки манги */
+.manga-reader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10000;
+    display: none;
+}
+
+.manga-reader-overlay.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.manga-reader {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #1a1a1a;
+    color: white;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.reader-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #2d2d2d;
+    border-bottom: 1px solid #444;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.reader-title {
+    flex: 1;
+    min-width: 200px;
+}
+
+.reader-title h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+    color: #fff;
+}
+
+.chapter-info {
+    color: #e94560;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.chapter-title {
+    color: #888;
+    font-size: 0.9rem;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+.reader-controls-top {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.reader-btn {
+    background: #e94560;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-size: 0.9rem;
+}
+
+.reader-btn:hover {
+    background: #ff6b6b;
+}
+
+.reader-btn.close-reader {
+    background: #666;
+}
+
+.reader-btn.close-reader:hover {
+    background: #888;
+}
+
+.page-indicator {
+    font-weight: bold;
+    color: #fff;
+}
+
+.reader-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+}
+
+.pages-container {
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.page-wrapper {
+    display: none;
+    text-align: center;
+    max-width: 100%;
+}
+
+.page-wrapper.active {
+    display: block;
+}
+
+.manga-page {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.page-number {
+    margin-top: 0.5rem;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.reader-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #2d2d2d;
+    border-top: 1px solid #444;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-info {
+    font-weight: bold;
+    color: #fff;
+}
+
+/* Загрузка */
+.manga-reader-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: white;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #333;
+    border-top: 4px solid #e94560;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .reader-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .reader-controls-top {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .reader-footer {
+        flex-direction: column;
+    }
+    
+    .reader-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+}
+
+
+
+/* Стили для читалки манги */
+.manga-reader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10000;
+    display: none;
+}
+
+.manga-reader-overlay.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.manga-reader {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #1a1a1a;
+    color: white;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.reader-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #2d2d2d;
+    border-bottom: 1px solid #444;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.reader-title {
+    flex: 1;
+    min-width: 200px;
+}
+
+.reader-title h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.2rem;
+    color: #fff;
+}
+
+.chapter-info {
+    color: #e94560;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.chapter-title {
+    color: #888;
+    font-size: 0.9rem;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+.reader-controls-top {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.reader-btn {
+    background: #e94560;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-size: 0.9rem;
+}
+
+.reader-btn:hover {
+    background: #ff6b6b;
+}
+
+.reader-btn.close-reader {
+    background: #666;
+}
+
+.reader-btn.close-reader:hover {
+    background: #888;
+}
+
+.page-indicator {
+    font-weight: bold;
+    color: #fff;
+}
+
+.reader-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+}
+
+.pages-container {
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.page-wrapper {
+    display: none;
+    text-align: center;
+    max-width: 100%;
+}
+
+.page-wrapper.active {
+    display: block;
+}
+
+.manga-page {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.page-number {
+    margin-top: 0.5rem;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.reader-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #2d2d2d;
+    border-top: 1px solid #444;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-info {
+    font-weight: bold;
+    color: #fff;
+}
+
+/* Загрузка */
+.manga-reader-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: white;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #333;
+    border-top: 4px solid #e94560;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .reader-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .reader-controls-top {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .reader-footer {
+        flex-direction: column;
+    }
+    
+    .reader-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+    }
+    
+    .reader-title h3 {
+        font-size: 1rem;
+    }
+    
+    .chapter-info {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .reader-header {
+        padding: 0.5rem;
+    }
+    
+    .reader-content {
+        padding: 0.5rem;
+    }
+    
+    .reader-footer {
+        padding: 0.5rem;
+    }
+    
+    .reader-btn {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.7rem;
+    }
+    
+    .page-indicator,
+    .page-info {
+        font-size: 0.8rem;
+    }
+}
+
+/* Дополнительные стили для лучшего UX */
+.manga-page {
+    transition: transform 0.2s ease;
+}
+
+.manga-page:hover {
+    transform: scale(1.01);
+}
+
+.reader-btn:disabled {
+    background: #666;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.reader-btn:disabled:hover {
+    background: #666;
+}
+
+/* Скрытие скроллбара для лучшего вида */
+.reader-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.reader-content::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+.reader-content::-webkit-scrollbar-thumb {
+    background: #e94560;
+    border-radius: 3px;
+}
+
+.reader-content::-webkit-scrollbar-thumb:hover {
+    background: #ff6b6b;
+}
+
+/* Анимация появления */
+.manga-reader-overlay {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.page-wrapper {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Индикатор загрузки изображений */
+.manga-page {
+    background: #2d2d2d;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.manga-page:before {
+    content: "Загрузка...";
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.manga-page[src]:not([src=""]) {
+    background: transparent;
+}
+
+.manga-page[src]:not([src=""]):before {
+    content: none;
+}

@@ -35,7 +35,7 @@ const MANGA_STATUS_TRANSLATED = {
 const MANGA_STATUS = Object.keys(MANGA_STATUS_TRANSLATED);
 
 //все ответы будут на английском языке, русского перевода в api нет
-const ANILIST_API = "https://graphql.anilist.co"; //url для post запросов
+const ANILIST_API = "https://graphql.anilist.co"; //url для post запросов к API Anilist
 
 //асинхронная функция для работы с Anilist через graphQL
 async function graphQLRequest(query, variables = {}){
@@ -237,6 +237,7 @@ const MANGA_QUERIES = {
 //класс для работы с каталогом манги
 class MangaCatalog{
     constructor() {
+        this.readManga = new ReadManga();
         this.currentFilters = {
             genres: [],
             status: '',
@@ -463,7 +464,6 @@ class MangaCatalog{
     }
 
     //вывод манги в кратком отображении для грида
-    //опять же весь визуал условный, его можно менять
     showMangaGrid(mangaList, container, clearContainer = true) {
         if (!mangaList || mangaList.length === 0) {
             if (clearContainer) {
@@ -517,7 +517,6 @@ class MangaCatalog{
 
     //отображение деталей манги уже на сайте
     displayMangaDetails(manga, container) {
-        // Очистка описания от HTML тегов
         const cleanDescription = manga.description 
             ? manga.description.replace(/<[^>]*>/g, '') 
             : "Описание отсутствует";
@@ -574,6 +573,205 @@ class MangaCatalog{
                 ` : ''}
             </div>
         `;
+    }
+
+    //чтение манги
+    async startReading(mangaId) {
+        try {
+            console.log(`Начинаем чтение манги ID: ${mangaId}`);
+            this.showReaderLoading();
+            
+            const result = await graphQLRequest(MANGA_QUERIES.details, { id: parseInt(mangaId) });
+            
+            if (!result || !result.data) {
+                throw new Error('Не удалось получить информацию о манге');
+            }
+            
+            const manga = await this.readManga.findMangaByAnilistId(result.data.Media);
+            
+            if (!manga) {
+                throw new Error('Манга не найдена');
+            }
+            
+            const chapters = await this.readManga.getAllChapters(manga.id);
+            
+            if (!chapters || chapters.length === 0) {
+                throw new Error('Главы не найдены');
+            }
+            
+            const firstChapter = this.getFirstChapter(chapters);
+            const pages = await this.readManga.getChapterPages(firstChapter.id);
+            
+            if (!pages || pages.length === 0) {
+                throw new Error('Страницы не найдены');
+            }
+            this.displayMangaReader(manga, firstChapter, pages, chapters);
+            
+        } catch (error) {
+            console.error('Ошибка при запуске чтения:', error);
+            this.hideReaderLoading();
+            alert('Ошибка: ' + error.message);
+        }
+    }
+
+    getFirstChapter(chapters) {
+        const sortedChapters = chapters.sort((a, b) => {
+            const chapA = parseFloat(a.attributes.chapter) || 0;
+            const chapB = parseFloat(b.attributes.chapter) || 0;
+            return chapA - chapB;
+        });
+        return sortedChapters[0];
+    }
+
+    showReaderLoading() {
+        const loadingHTML = `
+            <div class="manga-reader-overlay active">
+                <div class="manga-reader-loading">
+                    <div class="loading-spinner"></div>
+                    <p>Загрузка манги...</p>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', loadingHTML);
+    }
+
+    hideReaderLoading() {
+        const loadingOverlay = document.querySelector('.manga-reader-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.remove();
+        }
+    }
+
+    displayMangaReader(manga, chapter, pages, allChapters) {
+        this.hideReaderLoading();
+        
+        const readerHTML = `
+            <div class="manga-reader-overlay active">
+                <div class="manga-reader">
+                    <div class="reader-header">
+                        <div class="reader-title">
+                            <h3>${manga.title.romaji || manga.title.english}</h3>
+                            <span class="chapter-info">Глава ${chapter.attributes.chapter || '1'}</span>
+                            ${chapter.attributes.title ? `<span class="chapter-title">${chapter.attributes.title}</span>` : ''}
+                        </div>
+                        <div class="reader-controls-top">
+                            <button class="reader-btn" onclick="mangaCatalog.prevPage()">← Назад</button>
+                            <span class="page-indicator">1 / ${pages.length}</span>
+                            <button class="reader-btn" onclick="mangaCatalog.nextPage()">Вперед →</button>
+                            <button class="reader-btn close-reader" onclick="mangaCatalog.closeReader()">✕ Закрыть</button>
+                        </div>
+                    </div>
+                    <div class="reader-content">
+                        <div class="pages-container">
+                            ${pages.map((pageUrl, index) => `
+                                <div class="page-wrapper ${index === 0 ? 'active' : ''}">
+                                    <img src="${pageUrl}" 
+                                        alt="Страница ${index + 1}" 
+                                        class="manga-page"
+                                        loading="lazy"
+                                        onerror="this.style.display='none'">
+                                    <div class="page-number">${index + 1}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="reader-footer">
+                        <button class="reader-btn" onclick="mangaCatalog.prevPage()">← Предыдущая</button>
+                        <span class="page-info">Страница 1 из ${pages.length}</span>
+                        <button class="reader-btn" onclick="mangaCatalog.nextPage()">Следующая →</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', readerHTML);
+        
+        this.readerData = {
+            currentPage: 0,
+            totalPages: pages.length,
+            pages: pages,
+            currentChapter: chapter,
+            allChapters: allChapters,
+            manga: manga
+        };
+        
+        this.setupKeyboardControls();
+    }
+
+    setupKeyboardControls() {
+        this.keyboardHandler = (e) => {
+            if (!document.querySelector('.manga-reader-overlay.active')) return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    this.prevPage();
+                    break;
+                case 'ArrowRight':
+                    this.nextPage();
+                    break;
+                case 'Escape':
+                    this.closeReader();
+                    break;
+            }
+        };
+        
+        document.addEventListener('keydown', this.keyboardHandler);
+    }
+
+    prevPage() {
+        if (this.readerData && this.readerData.currentPage > 0) {
+            this.readerData.currentPage--;
+            this.updateReaderDisplay();
+        }
+    }
+
+    nextPage() {
+        if (this.readerData && this.readerData.currentPage < this.readerData.totalPages - 1) {
+            this.readerData.currentPage++;
+            this.updateReaderDisplay();
+        }
+    }
+
+    updateReaderDisplay() {
+        if (!this.readerData) return;
+        
+        const pageWrappers = document.querySelectorAll('.page-wrapper');
+        const pageIndicators = document.querySelectorAll('.page-indicator');
+        const pageInfos = document.querySelectorAll('.page-info');
+        
+        pageWrappers.forEach(wrapper => {
+            wrapper.classList.remove('active');
+        });
+
+        if (pageWrappers[this.readerData.currentPage]) {
+            pageWrappers[this.readerData.currentPage].classList.add('active');
+            pageWrappers[this.readerData.currentPage].scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+
+        const currentPageNum = this.readerData.currentPage + 1;
+        pageIndicators.forEach(indicator => {
+            indicator.textContent = `${currentPageNum} / ${this.readerData.totalPages}`;
+        });
+        
+        pageInfos.forEach(info => {
+            info.textContent = `Страница ${currentPageNum} из ${this.readerData.totalPages}`;
+        });
+    }
+
+    closeReader() {
+        if (this.keyboardHandler) {
+            document.removeEventListener('keydown', this.keyboardHandler);
+        }
+        
+        const readerOverlay = document.querySelector('.manga-reader-overlay');
+        if (readerOverlay) {
+            readerOverlay.remove();
+        }
+        
+        this.readerData = null;
     }
 
     //настройка пагинации
