@@ -114,7 +114,46 @@
             border-radius: 5px;
             text-align: center;
         }
-        
+        .avatar-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ddd;
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.avatar-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.avatar-upload label {
+    cursor: pointer;
+    padding: 8px 16px;
+    background: #007bff;
+    color: white;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+.avatar-upload label:hover {
+    background: #0056b3;
+}
+
+#avatarInput {
+    display: none;
+}
+
+.remove-avatar {
+    margin-top: 10px;
+    color: #dc3545;
+    cursor: pointer;
+    text-decoration: underline;
+}
         .alert-success {
             background: #d4edda;
             color: #155724;
