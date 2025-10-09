@@ -27,7 +27,13 @@ try {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$user) {
-        $error = "Пользователь не найден!";
+        // Если пользователь не найден, очищаем сессию и куки
+        session_destroy();
+        foreach (['user_username', 'user_email', 'user_number', 'user_avatar', 'user_id'] as $cookie) {
+            setcookie($cookie, '', time() - 3600, "/");
+        }
+        header("Location: login.php");
+        exit();
     }
 } catch(PDOException $e) {
     $error = "Ошибка базы данных: " . $e->getMessage();
@@ -282,7 +288,7 @@ $avatar_path = $_COOKIE['user_avatar'] ?? $user['avatar'] ?? '';
         <div class="form-section">
             <h2>Сменить пароль</h2>
             <div class="password-note">
-                <strong>Забыли пароль?</strong> Вы можете установить новый пароль без ввода старого.
+                <strong>Забыли фигню которые вы поставили на пароль?</strong> Можете придумать новую:3
             </div>
             <form method="post">
                 <input type="hidden" name="reset_password" value="1">
@@ -302,7 +308,7 @@ $avatar_path = $_COOKIE['user_avatar'] ?? $user['avatar'] ?? '';
 
         <div class="navigation">
             <a href="index.php">На главную</a> | 
-            <a href="logout.php">Выйти</a>
+            <a href="logout.php" onclick="clearCookies()">Выйти</a>
         </div>
     </div>
 
@@ -325,6 +331,15 @@ $avatar_path = $_COOKIE['user_avatar'] ?? $user['avatar'] ?? '';
                 reader.readAsDataURL(this.files[0]);
             }
         });
+
+        function clearCookies() {
+            // Очищаем пользовательские куки на клиентской стороне
+            document.cookie = "user_username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "user_email=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "user_number=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "user_avatar=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "user_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        }
     </script>
 </body>
 </html>

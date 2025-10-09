@@ -1,6 +1,51 @@
 <?php
 // registration.php
 
+// Функция для создания градиентного аватара (упрощенная версия без GD)
+function createGradientAvatar($username) {
+    // Вместо создания изображения через GD, создаем SVG с градиентом
+    $firstLetter = strtoupper(substr($username, 0, 1));
+    $hash = md5($username);
+    
+    // Генерируем цвета на основе имени пользователя
+    $color1 = '#' . substr($hash, 0, 6);
+    $color2 = '#' . substr($hash, 6, 6);
+    
+    // Создаем SVG с градиентом
+    $svg = '<?xml version="1.0" encoding="UTF-8"?>
+    <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="' . $color1 . '" />
+                <stop offset="100%" stop-color="' . $color2 . '" />
+            </linearGradient>
+        </defs>
+        <rect width="200" height="200" fill="url(#gradient)" />
+        <text x="100" y="120" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle">' . $firstLetter . '</text>
+    </svg>';
+    
+    // Сохраняем SVG
+    $uploadDir = 'uploads/avatars/';
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
+    
+    $fileName = 'avatar_gradient_' . uniqid() . '.svg';
+    $filePath = $uploadDir . $fileName;
+    
+    file_put_contents($filePath, $svg);
+    
+    return $filePath;
+}
+
+// Альтернативная функция для создания PNG через простой HTML-элемент (если SVG не подходит)
+function createSimpleAvatar($username) {
+    // Просто возвращаем путь к дефолтному аватару или null
+    // В реальном приложении можно использовать сервисы типа DiceBear API
+    // или создать простой PNG через base64
+    return null; // Будет использоваться стандартный аватар на фронтенде
+}
+
 // Обработка формы регистрации
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Получение данных из формы
@@ -40,6 +85,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Пароль не должен превышать 50 символов";
     }
     
+    // Обработка загрузки аватара
+    $avatarPath = null;
+    if (isset($_FILES['avatar']) && $_FILES['avatar']['error'] === UPLOAD_ERR_OK) {
+        $avatar = $_FILES['avatar'];
+        
+        // Проверка типа файла
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        $fileType = mime_content_type($avatar['tmp_name']);
+        
+        if (!in_array($fileType, $allowedTypes)) {
+            $errors[] = "Разрешены только файлы изображений (JPEG, PNG, GIF, WebP)";
+        } elseif ($avatar['size'] > 2 * 1024 * 1024) { // 2MB
+            $errors[] = "Размер файла не должен превышать 2MB";
+        } else {
+            // Создание папки для аватаров, если её нет
+            $uploadDir = 'uploads/avatars/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
+            }
+            
+            // Генерация уникального имени файла
+            $fileExtension = pathinfo($avatar['name'], PATHINFO_EXTENSION);
+            $fileName = 'avatar_' . uniqid() . '.' . $fileExtension;
+            $avatarPath = $uploadDir . $fileName;
+            
+            if (!move_uploaded_file($avatar['tmp_name'], $avatarPath)) {
+                $errors[] = "Ошибка при загрузке файла";
+                $avatarPath = null;
+            }
+        }
+    }
+    
     // Если нет ошибок валидации
     if (empty($errors)) {
         try {
@@ -61,16 +138,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 // Хеширование пароля
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                 
+                // Если аватар не загружен, создаем градиентный фон
+                if (!$avatarPath) {
+                    $avatarPath = createGradientAvatar($username);
+                }
+                
                 // Вставка нового пользователя
-                $insertSql = "INSERT INTO Users (number, email, password, username) 
-                             VALUES (:number, :email, :password, :username)";
+                $insertSql = "INSERT INTO Users (number, email, password, username, avatar) 
+                             VALUES (:number, :email, :password, :username, :avatar)";
                 $insertStmt = $conn->prepare($insertSql);
                 
                 $result = $insertStmt->execute([
                     ':number' => $phone,
                     ':email' => $email,
                     ':password' => $hashedPassword,
-                    ':username' => $username
+                    ':username' => $username,
+                    ':avatar' => $avatarPath
                 ]);
                 
                 if ($result) {
@@ -93,6 +176,63 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <link rel="stylesheet" href="css/registerate.css">
     <title>Регистрация</title>
+    <style>
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #ddd;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+        }
+        .avatar-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .avatar-upload label {
+            cursor: pointer;
+            padding: 8px 16px;
+            background: #007bff;
+            color: white;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        .avatar-upload label:hover {
+            background: #0056b3;
+        }
+        #avatarInput {
+            display: none;
+        }
+        .remove-avatar {
+            margin-top: 10px;
+            color: #dc3545;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        #defaultAvatar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -117,7 +257,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
             <?php endif; ?>
             
-            <form id="registrationForm" method="POST" action="">
+            <form id="registrationForm" method="POST" action="" enctype="multipart/form-data">
+                <div class="avatar-upload">
+                    <div id="defaultAvatar">
+                        <?php 
+                        $defaultLetter = isset($_POST['username']) && !empty($_POST['username']) 
+                            ? strtoupper(substr($_POST['username'], 0, 1)) 
+                            : '?';
+                        echo $defaultLetter;
+                        ?>
+                    </div>
+                    <img id="avatarPreview" src="" alt="Предпросмотр аватара" class="avatar-preview" style="display: none;">
+                    <label for="avatarInput">Выберите аватар</label>
+                    <input type="file" id="avatarInput" name="avatar" accept="image/*">
+                    <div id="removeAvatar" class="remove-avatar" style="display: none;">Удалить фото</div>
+                </div>
+                
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="email">Email</label>
@@ -172,6 +327,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 
     <script>
+        // Обработка загрузки аватара
+        const avatarInput = document.getElementById('avatarInput');
+        const avatarPreview = document.getElementById('avatarPreview');
+        const defaultAvatar = document.getElementById('defaultAvatar');
+        const removeAvatar = document.getElementById('removeAvatar');
+        
+        avatarInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    avatarPreview.src = e.target.result;
+                    avatarPreview.style.display = 'block';
+                    defaultAvatar.style.display = 'none';
+                    removeAvatar.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        removeAvatar.addEventListener('click', function() {
+            avatarInput.value = '';
+            avatarPreview.style.display = 'none';
+            defaultAvatar.style.display = 'flex';
+            removeAvatar.style.display = 'none';
+        });
+        
+        // Обновление дефолтного аватара при вводе имени пользователя
+        document.getElementById('username').addEventListener('input', function() {
+            const username = this.value;
+            const firstLetter = username ? username.charAt(0).toUpperCase() : '?';
+            defaultAvatar.textContent = firstLetter;
+        });
+        
         // Счетчики символов
         document.getElementById('email').addEventListener('input', function() {
             document.getElementById('emailCount').textContent = this.value.length;
@@ -204,6 +393,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             const email = document.getElementById('email').value;
             const phone = document.getElementById('phone').value;
             const username = document.getElementById('username').value;
+            const avatar = document.getElementById('avatarInput').files[0];
             
             let errors = [];
             
@@ -225,6 +415,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             if (username.length > 20) {
                 errors.push('Никнейм не должен превышать 20 символов!');
+            }
+            
+            if (avatar) {
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(avatar.type)) {
+                    errors.push('Разрешены только файлы изображений (JPEG, PNG, GIF, WebP)!');
+                }
+                
+                if (avatar.size > 2 * 1024 * 1024) {
+                    errors.push('Размер файла не должен превышать 2MB!');
+                }
             }
             
             if (errors.length > 0) {
