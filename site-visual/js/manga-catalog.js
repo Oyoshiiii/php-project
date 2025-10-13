@@ -100,20 +100,6 @@ const MANGA_QUERIES = {
         }
     `,
     //по нескольким фильтрам
-    /*
-    в запрос передаются:
-        жанр, год, статус, тип (манга)
-        номер страницы и кол-во элементов на странице (для пагинации, чтобы пользователь не ждал,
-                                                        пока прогрузятся все полученные манги по
-                                                        данной категории, а сам подгружал дополнительно
-                                                        еще мангу, если ему нужно больше вариантов)
-    Page - объект пагинации в Anilist, с которым формируется запрос
-    далее мы указываем, что хотим получить в ответе:
-        мангу
-        с жанрами $genres
-        и отсортированную по популярности
-    название манги возвращается на английском языке и ромадзи
-    */
     byFilters: 
     `
         query ($genres: [String], $status: MediaStatus, $startDate_greater: FuzzyDateInt, $startDate_lesser: FuzzyDateInt, $page: Int, $perPage: Int) {
@@ -151,11 +137,6 @@ const MANGA_QUERIES = {
     `,
     
     //поиск по названию
-    /*
-    запрос строится аналогично, только уже передается строка, а не массив
-    пагинация остается такой же
-    получение ответа происходит такое же, как и в поиске по категориям
-    */
     search: 
     `
         query ($search: String, $page: Int, $perPage: Int) {
@@ -242,7 +223,6 @@ const MANGA_QUERIES = {
 //класс для работы с каталогом манги
 class MangaCatalog{
     constructor() {
-        this.readManga = new ReadManga();
         this.currentFilters = {
             genres: [],
             status: '',
@@ -253,10 +233,9 @@ class MangaCatalog{
         this.currentSearch = '';
         this.isSearching = false;
         this.currentGenres = [];
-        this.totalPages = 0;
-        this.lastPageInfo = null;
         this.currentQueryType = 'popular'; // 'popular', 'genres', 'search'
     }
+    
     //настройка обработчика событий
     setupEventListeners() {
         const searchInput = document.getElementById('search-input');
@@ -282,18 +261,22 @@ class MangaCatalog{
             document.getElementById('mangaDetail').classList.remove('active');
         });
     }
+    
     //перевод манги
     translateGenre(genre){
         return MANGA_GENRES_TRANSLATED[genre] || genre;
     }
+    
     //перевод нескольких манг
     translateGenres(genres){
         return genres.map(genre => this.translateGenre(genre));
     }
+    
     //перевод просто всех жанров без фильтров по категориям
     translateAllGenres(){
         return MANGA_GENRES;
     }
+    
     getStatusText(status) {
         return MANGA_STATUS_TRANSLATED[status] || status;
     }
@@ -317,26 +300,21 @@ class MangaCatalog{
             this.currentPage = page;
             this.currentGenres = [];
             this.currentSearch = '';
-            //выполнение graphQL запроса с поиском популярной манги
+            
             const result = await graphQLRequest(MANGA_QUERIES.popular, {
                 page: page,
                 perPage: maxManga
             });
 
             if (result && result.data){
-                //showMangaGrid - метод отображения манги в контейнере
                 this.showMangaGrid(result.data.Page.media, container);
-                this.lastPageInfo = result.data.Page.pageInfo;
-                this.totalPages = result.data.Page.pageInfo.lastPage;
                 this.setupPagination(containerId);
             }
         }
         catch(error){
-            //класс error условный, его можно поменять вдальнейшем
             container.innerHTML = '<p class="error">Ошибка загрузки манги</p>';
         }
     }
-
 
     //загрузка манги по жанрам
     async loadByGenres(containerId, genres = [], page = 1, perPage = 12) {
@@ -346,12 +324,11 @@ class MangaCatalog{
         console.log('loadByGenres called with:', containerId, genres, page);
 
         try {
-
             this.currentQueryType = 'genres';
             this.currentGenres = genres;
             this.currentPage = page;
 
-            const result = await graphQLRequest(MANGA_QUERIES.byGenres, {
+            const result = await graphQLRequest(MANGA_QUERIES.byFilters, {
                 genres: genres,
                 page: page,
                 perPage: perPage
@@ -359,8 +336,6 @@ class MangaCatalog{
 
             if (result && result.data) {
                 this.showMangaGrid(result.data.Page.media, container, true);
-                this.lastPageInfo = result.data.Page.pageInfo;
-                this.totalPages = result.data.Page.pageInfo.lastPage;
                 this.setupPagination(containerId);
             }
         } catch(error) {
@@ -368,7 +343,6 @@ class MangaCatalog{
             container.innerHTML = '<p class="error">Ошибка загрузки манги</p>';
         }
     }
-
 
     async applyFilters(containerId, page = 1) {
         const container = document.getElementById(containerId);
@@ -408,10 +382,7 @@ class MangaCatalog{
                     this.showMangaGrid(mangaList, container, false);
                 }
 
-                //настройка пагинации
-                if (result.data.Page.pageInfo) {
-                    this.pagination(result.data.Page.pageInfo, containerId);
-                }
+                this.setupPagination(containerId);
             }
         } catch(error) {
             console.error('Ошибка применения фильтров:', error);
@@ -493,7 +464,6 @@ class MangaCatalog{
         if (!container) return;
 
         try {
-
             this.currentQueryType = 'search';
             this.currentSearch = searchTerm;
             this.currentPage = page;
@@ -504,10 +474,8 @@ class MangaCatalog{
                 perPage: perPage
             });
 
-        if (result && result.data) {
+            if (result && result.data) {
                 this.showMangaGrid(result.data.Page.media, container, true);
-                this.lastPageInfo = result.data.Page.pageInfo;
-                this.totalPages = result.data.Page.pageInfo.lastPage;
                 this.setupPagination(containerId);
             }
         } catch(error) {
@@ -597,7 +565,7 @@ class MangaCatalog{
                        ${manga.genres.map(genre => `<span class="genre-tag">${genre}</span>`).join('')}
                     </div>
                             
-                    <button class="btn-read-manga" onclick="mangaCatalog.startReading(${manga.id})">
+                    <button class="btn-read-manga" onclick="alert('Функция чтения манги временно недоступна')">
                         📖 Начать читать
                     </button>
                     ${manga.siteUrl ? `<a href="${manga.siteUrl}" target="_blank" class="btn-anilist">🔗 AniList</a>` : ''}
@@ -627,292 +595,40 @@ class MangaCatalog{
         `;
     }
 
-    //чтение манги
-    async startReading(mangaId) {
-        try {
-            console.log(`Начинаем чтение манги ID: ${mangaId}`);
-            this.showReaderLoading();
-            
-            const result = await graphQLRequest(MANGA_QUERIES.details, { id: parseInt(mangaId) });
-            
-            if (!result || !result.data) {
-                throw new Error('Не удалось получить информацию о манге');
-            }
-            
-            const manga = await this.readManga.findMangaByAnilistId(result.data.Media);
-            
-            if (!manga) {
-                throw new Error('Манга не найдена');
-            }
-            
-            const chapters = await this.readManga.getAllChapters(manga.id);
-            
-            if (!chapters || chapters.length === 0) {
-                throw new Error('Главы не найдены');
-            }
-            
-            const firstChapter = this.getFirstChapter(chapters);
-            const pages = await this.readManga.getChapterPages(firstChapter.id);
-            
-            if (!pages || pages.length === 0) {
-                throw new Error('Страницы не найдены');
-            }
-            this.displayMangaReader(manga, firstChapter, pages, chapters);
-            
-        } catch (error) {
-            console.error('Ошибка при запуске чтения:', error);
-            this.hideReaderLoading();
-            alert('Ошибка: ' + error.message);
-        }
-    }
-
-    getFirstChapter(chapters) {
-        const sortedChapters = chapters.sort((a, b) => {
-            const chapA = parseFloat(a.attributes.chapter) || 0;
-            const chapB = parseFloat(b.attributes.chapter) || 0;
-            return chapA - chapB;
-        });
-        return sortedChapters[0];
-    }
-
-    showReaderLoading() {
-        const loadingHTML = `
-            <div class="manga-reader-overlay active">
-                <div class="manga-reader-loading">
-                    <div class="loading-spinner"></div>
-                    <p>Загрузка манги...</p>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', loadingHTML);
-    }
-
-    hideReaderLoading() {
-        const loadingOverlay = document.querySelector('.manga-reader-overlay');
-        if (loadingOverlay) {
-            loadingOverlay.remove();
-        }
-    }
-
-    displayMangaReader(manga, chapter, pages, allChapters) {
-        this.hideReaderLoading();
-        
-        const readerHTML = `
-            <div class="manga-reader-overlay active">
-                <div class="manga-reader">
-                    <div class="reader-header">
-                        <div class="reader-title">
-                            <h3>${manga.title.romaji || manga.title.english}</h3>
-                            <span class="chapter-info">Глава ${chapter.attributes.chapter || '1'}</span>
-                            ${chapter.attributes.title ? `<span class="chapter-title">${chapter.attributes.title}</span>` : ''}
-                        </div>
-                        <div class="reader-controls-top">
-                            <button class="reader-btn" onclick="mangaCatalog.prevPage()">← Назад</button>
-                            <span class="page-indicator">1 / ${pages.length}</span>
-                            <button class="reader-btn" onclick="mangaCatalog.nextPage()">Вперед →</button>
-                            <button class="reader-btn close-reader" onclick="mangaCatalog.closeReader()">✕ Закрыть</button>
-                        </div>
-                    </div>
-                    <div class="reader-content">
-                        <div class="pages-container">
-                            ${pages.map((pageUrl, index) => `
-                                <div class="page-wrapper ${index === 0 ? 'active' : ''}">
-                                    <img src="${pageUrl}" 
-                                        alt="Страница ${index + 1}" 
-                                        class="manga-page"
-                                        loading="lazy"
-                                        onerror="this.style.display='none'">
-                                    <div class="page-number">${index + 1}</div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                    <div class="reader-footer">
-                        <button class="reader-btn" onclick="mangaCatalog.prevPage()">← Предыдущая</button>
-                        <span class="page-info">Страница 1 из ${pages.length}</span>
-                        <button class="reader-btn" onclick="mangaCatalog.nextPage()">Следующая →</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.insertAdjacentHTML('beforeend', readerHTML);
-        
-        this.readerData = {
-            currentPage: 0,
-            totalPages: pages.length,
-            pages: pages,
-            currentChapter: chapter,
-            allChapters: allChapters,
-            manga: manga
-        };
-        
-        this.setupKeyboardControls();
-    }
-
-    setupKeyboardControls() {
-        this.keyboardHandler = (e) => {
-            if (!document.querySelector('.manga-reader-overlay.active')) return;
-            
-            switch(e.key) {
-                case 'ArrowLeft':
-                    this.prevPage();
-                    break;
-                case 'ArrowRight':
-                    this.nextPage();
-                    break;
-                case 'Escape':
-                    this.closeReader();
-                    break;
-            }
-        };
-        
-        document.addEventListener('keydown', this.keyboardHandler);
-    }
-
-    prevPage() {
-        if (this.readerData && this.readerData.currentPage > 0) {
-            this.readerData.currentPage--;
-            this.updateReaderDisplay();
-        }
-    }
-
-    nextPage() {
-        if (this.readerData && this.readerData.currentPage < this.readerData.totalPages - 1) {
-            this.readerData.currentPage++;
-            this.updateReaderDisplay();
-        }
-    }
-
-    updateReaderDisplay() {
-        if (!this.readerData) return;
-        
-        const pageWrappers = document.querySelectorAll('.page-wrapper');
-        const pageIndicators = document.querySelectorAll('.page-indicator');
-        const pageInfos = document.querySelectorAll('.page-info');
-        
-        pageWrappers.forEach(wrapper => {
-            wrapper.classList.remove('active');
-        });
-
-        if (pageWrappers[this.readerData.currentPage]) {
-            pageWrappers[this.readerData.currentPage].classList.add('active');
-            pageWrappers[this.readerData.currentPage].scrollIntoView({ 
-                behavior: 'smooth',
-                block: 'center'
-            });
-        }
-
-        const currentPageNum = this.readerData.currentPage + 1;
-        pageIndicators.forEach(indicator => {
-            indicator.textContent = `${currentPageNum} / ${this.readerData.totalPages}`;
-        });
-        
-        pageInfos.forEach(info => {
-            info.textContent = `Страница ${currentPageNum} из ${this.readerData.totalPages}`;
-        });
-    }
-
-    closeReader() {
-        if (this.keyboardHandler) {
-            document.removeEventListener('keydown', this.keyboardHandler);
-        }
-        
-        const readerOverlay = document.querySelector('.manga-reader-overlay');
-        if (readerOverlay) {
-            readerOverlay.remove();
-        }
-        
-        this.readerData = null;
-    }
-
-    //настройка пагинации
-    pagination(pageInfo, containerId) {
-        const container = document.getElementById(containerId);
-        if (!container || !pageInfo || !pageInfo.hasNextPage) return;
-        
-        const existingBtn = container.querySelector('.load-more-btn');
-        if (existingBtn) existingBtn.remove();
-        
-        const loadMoreBtn = document.createElement('button');
-        loadMoreBtn.className = 'load-more-btn';
-        loadMoreBtn.innerHTML = `Загрузить еще (${pageInfo.currentPage}/${pageInfo.lastPage})`;
-        
-        loadMoreBtn.onclick = () => {
-            this.applyFilters(containerId, pageInfo.currentPage + 1);
-        };
-        
-        container.appendChild(loadMoreBtn);
-    }
-
     setupPagination(containerId) {
         const paginationContainer = document.getElementById('pagination');
-        if (!paginationContainer || !this.lastPageInfo) return;
+        if (!paginationContainer) return;
 
-        const currentPage = this.lastPageInfo.currentPage;
-        const lastPage = this.lastPageInfo.lastPage;
-        const hasNextPage = this.lastPageInfo.hasNextPage;
-
-        // Очищаем контейнер пагинации
         paginationContainer.innerHTML = '';
 
-        // Создаем элементы пагинации
         const paginationDiv = document.createElement('div');
         paginationDiv.className = 'pagination-controls';
 
-        // Кнопка "Назад"
         const prevButton = document.createElement('button');
         prevButton.className = 'pagination-btn';
         prevButton.innerHTML = '&laquo; Назад';
-        prevButton.disabled = currentPage <= 1;
+        prevButton.disabled = this.currentPage <= 1;
         prevButton.addEventListener('click', () => {
-            if (currentPage > 1) {
-                this.loadPage(currentPage - 1);
+            if (this.currentPage > 1) {
+                this.loadPage(this.currentPage - 1);
             }
         });
 
-        // Номера страниц
         const pageInfo = document.createElement('span');
         pageInfo.className = 'page-info';
-        pageInfo.textContent = `Страница ${currentPage} из ${lastPage}`;
+        pageInfo.textContent = `Страница ${this.currentPage}`;
 
-        // Кнопка "Вперед"
         const nextButton = document.createElement('button');
         nextButton.className = 'pagination-btn';
         nextButton.innerHTML = 'Вперед &raquo;';
-        nextButton.disabled = !hasNextPage;
         nextButton.addEventListener('click', () => {
-            if (hasNextPage) {
-                this.loadPage(currentPage + 1);
-            }
+            this.loadPage(this.currentPage + 1);
         });
 
-        // Добавляем элементы в пагинацию
         paginationDiv.appendChild(prevButton);
         paginationDiv.appendChild(pageInfo);
         paginationDiv.appendChild(nextButton);
         paginationContainer.appendChild(paginationDiv);
-
-        // Добавляем выбор страницы (опционально)
-        if (lastPage > 1) {
-            const pageSelect = document.createElement('select');
-            pageSelect.className = 'page-select';
-            pageSelect.innerHTML = '';
-            
-            for (let i = 1; i <= lastPage; i++) {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = i;
-                if (i === currentPage) option.selected = true;
-                pageSelect.appendChild(option);
-            }
-            
-            pageSelect.addEventListener('change', (e) => {
-                this.loadPage(parseInt(e.target.value));
-            });
-            
-            paginationDiv.appendChild(pageSelect);
-        }
     }
 
     loadPage(page) {
@@ -931,7 +647,6 @@ class MangaCatalog{
                 break;
         }
 
-        // Прокрутка к верху контейнера с мангой
         const container = document.getElementById(containerId);
         if (container) {
             container.scrollIntoView({ behavior: 'smooth' });
@@ -939,13 +654,13 @@ class MangaCatalog{
     }
 
     getFormatText(format) {
-    const formatMap = {
-        'MANGA': 'Манга',
-        'NOVEL': 'Роман',
-        'ONE_SHOT': 'Ваншот'
-    };
-    return formatMap[format] || format;
-}
+        const formatMap = {
+            'MANGA': 'Манга',
+            'NOVEL': 'Роман',
+            'ONE_SHOT': 'Ваншот'
+        };
+        return formatMap[format] || format;
+    }
 }
 
 //экземпляр класса для работы с каталогом
