@@ -147,7 +147,7 @@
         
 
         .catalog-filters {
-            background-color: white;
+            background-color: var(--dark);
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
@@ -390,10 +390,11 @@
 
 
         .manga-card {
-            background-color: white;
+            background-color: var(--dark);
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.158);
+            color: white;
             transition: transform 0.3s, box-shadow 0.3s;
             cursor: pointer;
         }
@@ -414,7 +415,7 @@
             padding: 15px 15px 5px;
             font-weight: 600;
             font-size: 1rem;
-            color: var(--dark);
+            color: var(--secondary);
             height: 2.4em;
             overflow: hidden;
             display: -webkit-box;
@@ -640,7 +641,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: rgba(0, 0, 0, 0.9);
             z-index: 1000;
             overflow-y: auto;
             display: none;
@@ -872,7 +873,7 @@ a {
 .container {
     background-color: var(--dark);
     width: 90%;
-    max-width: 1200px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 0 15px;
 }
@@ -992,7 +993,7 @@ nav a:hover, nav a.active {
 
 
 .catalog-filters {
-    background-color: var(--light);
+    background-color: var(--dark);
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
@@ -1683,7 +1684,7 @@ footer {
 }
 
 .manga-card {
-    background-color: var(--light);
+    background-color: var(--dark);
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
