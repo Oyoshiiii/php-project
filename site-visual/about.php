@@ -9,232 +9,158 @@ require("blocks/header.php");
         <title>AnimeManga Store - Магазин мерча и энциклопедия манги</title>
         <link rel="stylesheet" href="css/index.css" >
         <style>
-        :root {
-            --primary: #ff6b9d;
-            --secondary: #5d5fef;
-            --dark: #1a1a2e;
-            --light: #f8f9fa;
-            --accent: #ffd166;
-            --bg-color: #121212;
-            --text-color: #e0e0e0;
-            --card-bg: #1e1e1e;
-            --header-bg: #0a0a0a;
-            --footer-bg: #050505;
-            --border-color: #333;
-            --shadow: 0 4px 15px rgba(0,0,0,0.3);
-            --muted-text: #aaa;
-            --section-bg: #181818;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 40px 15px;
-        }
-
-        .about-header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-
-        .about-header h1 {
-            font-size: 2.5rem;
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-
-        .about-header p {
-            font-size: 1.2rem;
-            color: var(--muted-text);
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .about-section {
-            margin-bottom: 60px;
-        }
-
-        .about-section h2 {
-            font-size: 2rem;
-            margin-bottom: 20px;
-            color: var(--text-color);
-            border-bottom: 2px solid var(--primary);
-            padding-bottom: 10px;
-            display: inline-block;
-        }
-
-        .about-section p {
-            margin-bottom: 20px;
-            color: var(--muted-text);
-            line-height: 1.8;
-        }
-
-        .divider {
-            height: 2px;
-            background: linear-gradient(to right, transparent, var(--primary), transparent);
-            margin: 40px 0;
-        }
-
-        .values-section {
-            margin-bottom: 60px;
-        }
-
-        .values-section h2 {
-            font-size: 2rem;
-            margin-bottom: 40px;
-            color: var(--text-color);
-            border-bottom: 2px solid var(--primary);
-            padding-bottom: 10px;
-            display: inline-block;
-        }
-
-        .values-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-        }
-
-        .values-table th {
-            background-color: var(--primary);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            font-size: 1.2rem;
-        }
-
-        .values-table td {
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--muted-text);
-        }
-
-        .values-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .values-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
-        }
-
-        .value-card {
-            background-color: var(--card-bg);
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: var(--shadow);
-            text-align: center;
-            transition: transform 0.3s;
-        }
-
-        .value-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .value-icon {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            color: var(--primary);
-        }
-
-        .value-card h3 {
-            margin-bottom: 15px;
-            color: var(--text-color);
-        }
-
-        .value-card p {
-            color: var(--muted-text);
-        }
-
-        .team-section {
-            margin-bottom: 60px;
-        }
-
-        .team-section h2 {
-            font-size: 2rem;
-            margin-bottom: 40px;
-            color: var(--text-color);
-            border-bottom: 2px solid var(--primary);
-            padding-bottom: 10px;
-            display: inline-block;
-        }
-
-        .team-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 30px;
-        }
-
-        .team-member {
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            text-align: center;
-            transition: transform 0.3s;
-        }
-
-        .team-member:hover {
-            transform: translateY(-5px);
-        }
-
-        .member-photo {
-            height: 200px;
-            background-color: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: var(--secondary);
-        }
-
-        .member-info {
-            padding: 20px;
-        }
-
-        .member-info h3 {
-            margin-bottom: 5px;
-            color: var(--text-color);
-        }
-
-        .member-info p {
-            color: var(--muted-text);
-        }
-
-        @media (max-width: 768px) {
-            .about-header h1 {
-                font-size: 2rem;
+            /* ====== Общие стили ====== */
+            body {
+                font-family: "Inter", sans-serif;
+                background-color: #1e1e1e;
+                color: #e6e6e6;
+                margin: 0;
+                padding: 0;
             }
-            
+
+            .container {
+                max-width: 1000px;
+                margin: 0 auto;
+                padding: 60px 20px 80px 20px;
+            }
+
+            /* ====== Заголовки ====== */
+            h1, h2, h3 {
+                color: #ffffff;
+                margin-bottom: 12px;
+            }
+
+            h1 {
+                font-size: 2.2rem;
+                text-align: center;
+                margin-bottom: 24px;
+            }
+
+            h2 {
+                font-size: 1.6rem;
+                margin-top: 40px;
+                border-left: 4px solid #8b5cf6;
+                padding-left: 10px;
+            }
+
+            p {
+                line-height: 1.6;
+            }
+
+            /* ====== Блок “О компании” ====== */
+            .about-header {
+                text-align: center;
+                margin-bottom: 40px;
+            }
+
             .about-header p {
-                font-size: 1rem;
+                max-width: 800px;
+                margin: 0 auto;
+                font-size: 1.1rem;
+                color: #d0d0d0;
             }
-            
-            .values-table {
-                display: block;
-                overflow-x: auto;
+
+            /* ====== История ====== */
+            .about-section {
+                background-color: #262626;
+                border-radius: 16px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+                padding: 40px;
+                margin-bottom: 40px;
             }
-        }
+
+            .about-image {
+                text-align: center;
+                font-size: 2rem;
+                margin-top: 20px;
+            }
+
+            /* ====== Ценности ====== */
+            .values-section {
+                margin-top: 40px;
+            }
+
+            .values-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 24px;
+                margin-top: 20px;
+            }
+
+            .value-card {
+                background-color: #2f2f2f;
+                border-radius: 12px;
+                padding: 24px;
+                text-align: center;
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+
+            .value-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+            }
+
+            .value-icon {
+                font-size: 2rem;
+                margin-bottom: 10px;
+            }
+
+            /* ====== Команда ====== */
+            .team-section {
+                margin-top: 60px;
+            }
+
+            .team-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 24px;
+                margin-top: 20px;
+            }
+
+            .team-member {
+                display: flex;
+                align-items: center;
+                background-color: #2f2f2f;
+                border-radius: 12px;
+                padding: 16px 20px;
+                gap: 16px;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+                transition: transform 0.2s ease;
+            }
+
+            .team-member:hover {
+                transform: translateY(-3px);
+            }
+
+            .member-photo {
+                font-size: 2.4rem;
+            }
+
+            .member-info h3 {
+                margin: 0;
+                font-size: 1.1rem;
+            }
+
+            .member-info p {
+                color: #b5b5b5;
+                margin: 4px 0 0 0;
+            }
+
+            /* ====== Адаптивность ====== */
+            @media (max-width: 600px) {
+                .container {
+                    padding: 40px 16px;
+                }
+
+                h1 {
+                    font-size: 1.8rem;
+                }
+
+                .team-member {
+                    flex-direction: column;
+                    text-align: center;
+                }
+            }
         </style>
     </head>
     <body>
