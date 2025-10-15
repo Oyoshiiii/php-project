@@ -27,7 +27,6 @@ try {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$user) {
-        // Если пользователь не найден, очищаем сессию и куки
         session_destroy();
         foreach (['user_username', 'user_email', 'user_number', 'user_avatar', 'user_id'] as $cookie) {
             setcookie($cookie, '', time() - 3600, "/");
@@ -48,38 +47,31 @@ $cookie_number = $_COOKIE['user_number'] ?? $user['number'] ?? '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
     $uploadDir = 'uploads/avatars/';
     
-    // Создаем директорию если не существует
     if (!file_exists($uploadDir)) {
         mkdir($uploadDir, 0777, true);
     }
     
     $avatar = $_FILES['avatar'];
     
-    // Проверяем ошибки загрузки
+    
     if ($avatar['error'] === UPLOAD_ERR_OK) {
-        // Проверяем тип файла по расширению
         $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         $fileExtension = strtolower(pathinfo($avatar['name'], PATHINFO_EXTENSION));
         
         if (!in_array($fileExtension, $allowedExtensions)) {
             $error = "Разрешены только файлы JPG, JPEG, PNG, GIF и WebP!";
         } else {
-            // Проверяем размер файла (макс. 5MB)
             if ($avatar['size'] > 5 * 1024 * 1024) {
                 $error = "Размер файла не должен превышать 5MB!";
             } else {
-                // Генерируем уникальное имя файла
                 $fileName = 'avatar_' . $_SESSION['user_id'] . '_' . time() . '.' . $fileExtension;
                 $filePath = $uploadDir . $fileName;
                 
-                // Удаляем старый аватар если существует
                 if (!empty($user['avatar']) && file_exists($user['avatar'])) {
                     unlink($user['avatar']);
                 }
                 
-                // Сохраняем файл
                 if (move_uploaded_file($avatar['tmp_name'], $filePath)) {
-                    // Обновляем путь к аватару в БД
                     try {
                         $stmt = $conn->prepare("UPDATE Users SET avatar = :avatar WHERE id = :user_id");
                         $stmt->bindParam(':avatar', $filePath);
@@ -87,9 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
                         
                         if ($stmt->execute()) {
                             $success = "Аватар успешно обновлен!";
-                            // Обновляем данные пользователя
                             $user['avatar'] = $filePath;
-                            // Сохраняем путь к аватару в куки
                             setcookie('user_avatar', $filePath, time() + (30 * 24 * 60 * 60), "/");
                         } else {
                             $error = "Ошибка при сохранении аватара в базу данных!";
@@ -115,7 +105,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     
     if (!empty($username) && !empty($email)) {
         try {
-            // Проверяем, не занят ли email другим пользователем
             $stmt = $conn->prepare("SELECT id FROM Users WHERE email = :email AND id != :user_id");
             $stmt->bindParam(':email', $email);
             $stmt->bindParam(':user_id', $_SESSION['user_id']);
@@ -124,7 +113,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
             if ($stmt->fetch()) {
                 $error = "Этот email уже используется другим пользователем!";
             } else {
-                // Проверяем, не занят ли номер другим пользователем
                 if (!empty($number)) {
                     $stmt = $conn->prepare("SELECT id FROM Users WHERE number = :number AND id != :user_id");
                     $stmt->bindParam(':number', $number);
@@ -159,7 +147,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_password'])) {
                 // Хэшируем новый пароль
                 $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
                 
-                // Обновляем пароль в базе данных
                 $stmt = $conn->prepare("UPDATE Users SET password = :password WHERE id = :user_id");
                 $stmt->bindParam(':password', $hashed_password);
                 $stmt->bindParam(':user_id', $_SESSION['user_id']);
@@ -188,11 +175,9 @@ function updateProfile($conn, $username, $email, $number) {
     $stmt->bindParam(':user_id', $_SESSION['user_id']);
     
     if ($stmt->execute()) {
-        // Обновляем сессию
         $_SESSION['username'] = $username;
         $_SESSION['email'] = $email;
         
-        // Обновляем куки
         setcookie('user_username', $username, time() + (30 * 24 * 60 * 60), "/");
         setcookie('user_email', $email, time() + (30 * 24 * 60 * 60), "/");
         setcookie('user_number', $number, time() + (30 * 24 * 60 * 60), "/");
@@ -324,7 +309,6 @@ $avatar_path = $_COOKIE['user_avatar'] ?? $user['avatar'] ?? '';
                     if (avatarImg) {
                         avatarImg.src = e.target.result;
                     } else if (avatarPlaceholder) {
-                        // Заменяем placeholder на изображение
                         avatarPlaceholder.outerHTML = `<img src="${e.target.result}" alt="Аватар" class="user-avatar" onclick="document.getElementById('avatarInput').click()">`;
                     }
                 }
@@ -333,7 +317,7 @@ $avatar_path = $_COOKIE['user_avatar'] ?? $user['avatar'] ?? '';
         });
 
         function clearCookies() {
-            // Очищаем пользовательские куки на клиентской стороне
+            // Очищаем пользовательские куки
             document.cookie = "user_username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie = "user_email=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie = "user_number=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";

@@ -69,7 +69,6 @@ $saved_number = $_COOKIE['user_number'] ?? '';
 ?>
 <html>
     <head>
-        <meta charset="utf-8">
         <title>Login</title>
         <link rel="stylesheet" href="css/login.css">
     </head>

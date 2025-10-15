@@ -3,11 +3,9 @@
 
 // Функция для создания градиентного аватара (упрощенная версия без GD)
 function createGradientAvatar($username) {
-    // Вместо создания изображения через GD, создаем SVG с градиентом
     $firstLetter = strtoupper(substr($username, 0, 1));
     $hash = md5($username);
     
-    // Генерируем цвета на основе имени пользователя
     $color1 = '#' . substr($hash, 0, 6);
     $color2 = '#' . substr($hash, 6, 6);
     
@@ -24,7 +22,6 @@ function createGradientAvatar($username) {
         <text x="100" y="120" font-family="Arial, sans-serif" font-size="80" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle">' . $firstLetter . '</text>
     </svg>';
     
-    // Сохраняем SVG
     $uploadDir = 'uploads/avatars/';
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0755, true);
@@ -38,14 +35,6 @@ function createGradientAvatar($username) {
     return $filePath;
 }
 
-// Альтернативная функция для создания PNG через простой HTML-элемент (если SVG не подходит)
-function createSimpleAvatar($username) {
-    // Просто возвращаем путь к дефолтному аватару или null
-    // В реальном приложении можно использовать сервисы типа DiceBear API
-    // или создать простой PNG через base64
-    return null; // Будет использоваться стандартный аватар на фронтенде
-}
-
 // Обработка формы регистрации
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Получение данных из формы
@@ -54,34 +43,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
     
-    // Базовая валидация
     $errors = [];
     
     if (empty($email)) {
         $errors[] = "Email обязателен для заполнения";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    } 
+    elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Некорректный формат email";
-    } elseif (strlen($email) > 50) {
+    } 
+    elseif (strlen($email) > 50) {
         $errors[] = "Email не должен превышать 50 символов";
     }
     
     if (empty($phone)) {
         $errors[] = "Номер телефона обязателен";
-    } elseif (strlen($phone) > 12) {
+    } 
+    elseif (strlen($phone) > 12) {
         $errors[] = "Номер телефона не должен превышать 12 символов";
     }
     
     if (empty($username)) {
         $errors[] = "Никнейм обязателен";
-    } elseif (strlen($username) > 20) {
+    } 
+    elseif (strlen($username) > 20) {
         $errors[] = "Никнейм не должен превышать 20 символов";
     }
     
     if (empty($password)) {
         $errors[] = "Пароль обязателен";
-    } elseif (strlen($password) < 8) {
+    } 
+    elseif (strlen($password) < 8) {
         $errors[] = "Пароль должен содержать минимум 8 символов";
-    } elseif (strlen($password) > 50) {
+    } 
+    elseif (strlen($password) > 50) {
         $errors[] = "Пароль не должен превышать 50 символов";
     }
     
@@ -96,9 +90,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         if (!in_array($fileType, $allowedTypes)) {
             $errors[] = "Разрешены только файлы изображений (JPEG, PNG, GIF, WebP)";
-        } elseif ($avatar['size'] > 2 * 1024 * 1024) { // 2MB
+        } 
+        elseif ($avatar['size'] > 2 * 1024 * 1024) { // 2MB
             $errors[] = "Размер файла не должен превышать 2MB";
-        } else {
+        } 
+        else {
             // Создание папки для аватаров, если её нет
             $uploadDir = 'uploads/avatars/';
             if (!is_dir($uploadDir)) {
@@ -124,17 +120,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $conn = new PDO("mysql:host=localhost;dbname=mangawebsite", "root", "12345");
             $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             
-            // Проверка существования пользователя с таким email или username
-            $checkSql = "SELECT id FROM Users WHERE email = :email OR username = :username";
+            // Проверка существования пользователя с таким email, username или номером телефона
+            $checkSql = "SELECT id, email, username, number FROM Users WHERE email = :email OR username = :username OR number = :number";
             $checkStmt = $conn->prepare($checkSql);
             $checkStmt->execute([
                 ':email' => $email,
-                ':username' => $username
+                ':username' => $username,
+                ':number' => $phone
             ]);
             
-            if ($checkStmt->fetch()) {
-                $errors[] = "Пользователь с таким email или никнеймом уже существует";
-            } else {
+            $existingUsers = $checkStmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            if (!empty($existingUsers)) {
+                $emailExists = false;
+                $usernameExists = false;
+                $phoneExists = false;
+                
+                // Проверяем, какие именно поля уже существуют
+                foreach ($existingUsers as $user) {
+                    if ($user['email'] === $email) {
+                        $emailExists = true;
+                    }
+                    if ($user['username'] === $username) {
+                        $usernameExists = true;
+                    }
+                    if ($user['number'] === $phone) {
+                        $phoneExists = true;
+                    }
+                }
+                
+                // Добавляем ошибки только один раз для каждого типа
+                if ($emailExists) {
+                    $errors[] = "Пользователь с таким email уже существует";
+                }
+                if ($usernameExists) {
+                    $errors[] = "Пользователь с таким никнеймом уже существует";
+                }
+                if ($phoneExists) {
+                    $errors[] = "Пользователь с таким номером телефона уже существует";
+                }
+            } 
+            else {
                 // Хеширование пароля
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
                 
@@ -160,7 +186,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $success = "Регистрация прошла успешно!";
                     // Очистка формы после успешной регистрации
                     $_POST = array();
-                } else {
+                } 
+                else {
                     $errors[] = "Ошибка при регистрации. Попробуйте еще раз.";
                 }
             }
@@ -176,63 +203,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <link rel="stylesheet" href="css/registerate.css">
     <title>Регистрация</title>
-    <style>
-        .avatar-preview {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #ddd;
-            margin-bottom: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 40px;
-            font-weight: bold;
-            font-family: Arial, sans-serif;
-        }
-        .avatar-upload {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .avatar-upload label {
-            cursor: pointer;
-            padding: 8px 16px;
-            background: #007bff;
-            color: white;
-            border-radius: 4px;
-            transition: background 0.3s;
-        }
-        .avatar-upload label:hover {
-            background: #0056b3;
-        }
-        #avatarInput {
-            display: none;
-        }
-        .remove-avatar {
-            margin-top: 10px;
-            color: #dc3545;
-            cursor: pointer;
-            text-decoration: underline;
-        }
-        #defaultAvatar {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-size: 40px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -281,6 +251,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                placeholder="example@domain.com"
                                maxlength="50">
                         <div class="character-count"><span id="emailCount">0</span>/50</div>
+                        <div id="emailError" class="field-error">Пользователь с таким email уже существует</div>
                     </div>
                     
                     <div class="form-group">
@@ -290,6 +261,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                placeholder="+71234567890"
                                maxlength="12">
                         <div class="character-count"><span id="phoneCount">0</span>/12</div>
+                        <div id="phoneError" class="field-error">Пользователь с таким номером телефона уже существует</div>
                     </div>
                     
                     <div class="form-group">
@@ -299,6 +271,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                placeholder="Ваш уникальный никнейм"
                                maxlength="20">
                         <div class="character-count"><span id="usernameCount">0</span>/20</div>
+                        <div id="usernameError" class="field-error">Пользователь с таким никнеймом уже существует</div>
                     </div>
                     
                     <div class="form-group">
@@ -314,6 +287,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input type="password" id="confirmPassword" name="confirmPassword" required 
                                placeholder="Повторите пароль"
                                maxlength="50">
+                        <div id="passwordMatchError" class="field-error">Пароли не совпадают</div>
                     </div>
                 </div>
                 
@@ -378,7 +352,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             document.getElementById('passwordCount').textContent = this.value.length;
         });
         
-        // Инициализация счетчиков при загрузке
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('emailCount').textContent = document.getElementById('email').value.length;
             document.getElementById('phoneCount').textContent = document.getElementById('phone').value.length;
@@ -397,8 +370,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             
             let errors = [];
             
+            document.querySelectorAll('.field-error').forEach(error => {
+                error.style.display = 'none';
+            });
+            
             if (password !== confirmPassword) {
                 errors.push('Пароли не совпадают!');
+                document.getElementById('passwordMatchError').style.display = 'block';
             }
             
             if (password.length < 8) {
