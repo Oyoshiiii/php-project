@@ -9,19 +9,53 @@ try {
 catch(PDOException $e) {
     die("Ошибка подключения: " . $e->getMessage());
 }
+// ---------- ФУНКЦИИ КОРЗИНЫ ----------
 
-// Функции корзины (те же что в catalog.php)
-function removeFromCart($product_id) {
+// Удаление товара из БД по session_id + product_id
+function removeFromCartDB($pdo, $product_id) {
+    $session_id = session_id();
+    $stmt = $pdo->prepare("DELETE FROM order_items WHERE session_id = ? AND product_id = ?");
+    $stmt->execute([$session_id, $product_id]);
+}
+
+// Удаление из корзины (и из БД)
+function removeFromCart($pdo, $product_id) {
     if (isset($_SESSION['cart'][$product_id])) {
         unset($_SESSION['cart'][$product_id]);
     }
+    removeFromCartDB($pdo, $product_id);
 }
 
-function updateCart($product_id, $quantity) {
+// Обновление количества в корзине и в БД
+function updateCart($pdo, $product_id, $quantity) {
+    $session_id = session_id();
+    $quantity = intval($quantity);
+
     if ($quantity <= 0) {
-        removeFromCart($product_id);
+        removeFromCart($pdo, $product_id);
+        return;
+    }
+
+    // Обновляем количество в сессии
+    $_SESSION['cart'][$product_id] = $quantity;
+
+    // Проверяем наличие записи в order_items
+    $check = $pdo->prepare("SELECT id FROM order_items WHERE session_id = ? AND product_id = ?");
+    $check->execute([$session_id, $product_id]);
+    $row = $check->fetch(PDO::FETCH_ASSOC);
+
+    if ($row) {
+        $update = $pdo->prepare("UPDATE order_items SET quantity = ? WHERE id = ?");
+        $update->execute([$quantity, $row['id']]);
     } else {
-        $_SESSION['cart'][$product_id] = $quantity;
+        // Если записи нет — добавляем
+        $p = $pdo->prepare("SELECT price FROM products WHERE id = ?");
+        $p->execute([$product_id]);
+        $product = $p->fetch(PDO::FETCH_ASSOC);
+        if ($product) {
+            $insert = $pdo->prepare("INSERT INTO order_items (session_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
+            $insert->execute([$session_id, $product_id, $quantity, $product['price']]);
+        }
     }
 }
 
@@ -52,24 +86,6 @@ function getCartCount() {
     return $count;
 }
 
-// Обработка действий с корзиной
-if ($_POST) {
-    if (isset($_POST['remove'])) {
-        removeFromCart($_POST['product_id']);
-        $_SESSION['cart_message'] = "Товар удален из корзины";
-    } elseif (isset($_POST['update'])) {
-        $quantity = intval($_POST['quantity']);
-        updateCart($_POST['product_id'], $quantity);
-        $_SESSION['cart_message'] = "Количество обновлено";
-    } elseif (isset($_POST['clear_cart'])) {
-        $_SESSION['cart'] = [];
-        $_SESSION['cart_message'] = "Корзина очищена";
-    }
-    
-    header("Location: cart.php");
-    exit();
-}
-
 // Получение товаров корзины
 $cart_items = [];
 $total = 0;
@@ -94,7 +110,28 @@ if (!empty($_SESSION['cart'])) {
         ];
     }
 }
+// ---------- ОБРАБОТКА ДЕЙСТВИЙ В КОРЗИНЕ ----------
+if ($_POST) {
+    if (isset($_POST['remove'])) {
+        removeFromCart($pdo, $_POST['product_id']);
+        $_SESSION['cart_message'] = "Товар удалён из корзины";
+    } elseif (isset($_POST['update'])) {
+        $quantity = intval($_POST['quantity']);
+        updateCart($pdo, $_POST['product_id'], $quantity);
+        $_SESSION['cart_message'] = "Количество обновлено";
+    } elseif (isset($_POST['clear_cart'])) {
+        $_SESSION['cart'] = [];
 
+        $session_id = session_id();
+        $stmt = $pdo->prepare("DELETE FROM order_items WHERE session_id = ?");
+        $stmt->execute([$session_id]);
+
+        $_SESSION['cart_message'] = "Корзина очищена";
+    }
+
+    header("Location: cart.php");
+    exit();
+}
 require("blocks/header.php");
 ?>
 

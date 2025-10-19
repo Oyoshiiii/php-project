@@ -18,18 +18,76 @@ function addToCart($product_id, $quantity = 1) {
         $_SESSION['cart'][$product_id] = $quantity;
     }
 }
+function removeFromCartDB($pdo, $product_id) {
+    $session_id = session_id();
 
-function removeFromCart($product_id) {
+    $stmt = $pdo->prepare("DELETE FROM order_items WHERE session_id = ? AND product_id = ?");
+    $stmt->execute([$session_id, $product_id]);
+}
+function addToCartDB($pdo, $product_id, $quantity) {
+    $session_id = session_id();
+
+    // Проверяем, есть ли уже такой товар в order_items
+    $stmt = $pdo->prepare("SELECT id, quantity FROM order_items WHERE session_id = ? AND product_id = ?");
+    $stmt->execute([$session_id, $product_id]);
+    $item = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($item) {
+        // Обновляем количество
+        $new_qty = $item['quantity'] + $quantity;
+        $update = $pdo->prepare("UPDATE order_items SET quantity = ? WHERE id = ?");
+        $update->execute([$new_qty, $item['id']]);
+    } else {
+        // Добавляем новый товар
+        $price_stmt = $pdo->prepare("SELECT price FROM products WHERE id = ?");
+        $price_stmt->execute([$product_id]);
+        $product = $price_stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($product) {
+            $insert = $pdo->prepare("INSERT INTO order_items (session_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
+            $insert->execute([$session_id, $product_id, $quantity, $product['price']]);
+        }
+    }
+}
+function removeFromCart($pdo, $product_id) {
     if (isset($_SESSION['cart'][$product_id])) {
         unset($_SESSION['cart'][$product_id]);
     }
+
+    // Удаляем из базы
+    removeFromCartDB($pdo, $product_id);
 }
 
-function updateCart($product_id, $quantity) {
+function updateCart($pdo, $product_id, $quantity) {
+    $session_id = session_id();
+
     if ($quantity <= 0) {
-        removeFromCart($product_id);
+        // Удаляем из корзины и из БД
+        removeFromCart($pdo, $product_id);
     } else {
+        // Обновляем в сессии
         $_SESSION['cart'][$product_id] = $quantity;
+
+        // Проверяем, есть ли уже запись в order_items
+        $stmt = $pdo->prepare("SELECT id FROM order_items WHERE session_id = ? AND product_id = ?");
+        $stmt->execute([$session_id, $product_id]);
+        $item = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($item) {
+            // Обновляем количество
+            $update = $pdo->prepare("UPDATE order_items SET quantity = ? WHERE id = ?");
+            $update->execute([$quantity, $item['id']]);
+        } else {
+            // Добавляем новую запись, если по какой-то причине отсутствует
+            $price_stmt = $pdo->prepare("SELECT price FROM products WHERE id = ?");
+            $price_stmt->execute([$product_id]);
+            $product = $price_stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($product) {
+                $insert = $pdo->prepare("INSERT INTO order_items (session_id, product_id, quantity, price) VALUES (?, ?, ?, ?)");
+                $insert->execute([$session_id, $product_id, $quantity, $product['price']]);
+            }
+        }
     }
 }
 
@@ -124,6 +182,7 @@ if ($_POST && isset($_POST['action']) && $_POST['action'] == 'add_to_cart') {
     
     if ($quantity > 0) {
         addToCart($product_id, $quantity);
+        addToCartDB($pdo, $product_id, $quantity);
         $_SESSION['cart_message'] = "Товар добавлен в корзину!";
     }
     

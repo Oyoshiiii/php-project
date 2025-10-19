@@ -31,48 +31,44 @@ function getCartTotal($pdo) {
 function createOrder($pdo, $customer_data) {
     try {
         $pdo->beginTransaction();
-        
-        $total_amount = getCartTotal($pdo);
+        $session_id = session_id();
+
+        // Получаем товары из order_items для этого пользователя
+        $items_stmt = $pdo->prepare("SELECT * FROM order_items WHERE session_id = ?");
+        $items_stmt->execute([$session_id]);
+        $items = $items_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (empty($items)) {
+            throw new Exception("Нет товаров для оформления заказа.");
+        }
+
+        // Считаем общую сумму
+        $total_amount = 0;
+        foreach ($items as $item) {
+            $total_amount += $item['price'] * $item['quantity'];
+        }
+
+        // Создаем заказ
         $stmt = $pdo->prepare("
-            INSERT INTO orders (customer_name, customer_email, customer_phone, total_amount, created_at) 
+            INSERT INTO orders (customer_name, customer_email, customer_phone, total_amount, created_at)
             VALUES (?, ?, ?, ?, NOW())
         ");
-        
         $stmt->execute([
             $customer_data['name'],
             $customer_data['email'],
             $customer_data['phone'],
             $total_amount
         ]);
-        
+
         $order_id = $pdo->lastInsertId();
-        
-        // Добавляем товары в order_items
-        if (!empty($_SESSION['cart'])) {
-            $stmt = $pdo->prepare("
-                INSERT INTO order_items (order_id, product_id, quantity, price) 
-                VALUES (?, ?, ?, ?)
-            ");
-            
-            foreach ($_SESSION['cart'] as $product_id => $quantity) {
-                $product_stmt = $pdo->prepare("SELECT price FROM products WHERE id = ?");
-                $product_stmt->execute([$product_id]);
-                $product = $product_stmt->fetch(PDO::FETCH_ASSOC);
-                
-                if ($product) {
-                    $stmt->execute([
-                        $order_id,
-                        $product_id,
-                        $quantity,
-                        $product['price']
-                    ]);
-                }
-            }
-        }
-        
+
+        // Привязываем товары к заказу
+        $update = $pdo->prepare("UPDATE order_items SET order_id = ?, session_id = NULL WHERE session_id = ?");
+        $update->execute([$order_id, $session_id]);
+
         $pdo->commit();
         return $order_id;
-        
+
     } catch (Exception $e) {
         $pdo->rollBack();
         throw $e;
@@ -87,7 +83,6 @@ function getUserDataFromCookies() {
         'phone' => ''
     ];
     
-    // Получаем данные из куки
     if (isset($_COOKIE['user_username'])) {
         $user_data['name'] = urldecode($_COOKIE['user_username']);
     }
@@ -119,6 +114,7 @@ if ($_POST && isset($_POST['place_order'])) {
                 throw new Exception("Пожалуйста, заполните все обязательные поля");
             }
             
+            // СОЗДАЕМ ЗАКАЗ - данные попадут в orders и order_items
             $order_id = createOrder($pdo, $customer_data);
             
             // Очищаем корзину после успешного оформления
@@ -269,20 +265,6 @@ require("blocks/header.php");
     </div>
 
     <script>
-        // Автоподстановка данных при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            // Проверяем, заполнены ли поля, если нет - пытаемся взять из куки
-            const nameField = document.getElementById('customer_name');
-            const emailField = document.getElementById('customer_email');
-            const phoneField = document.getElementById('customer_phone');
-            
-            // Если поля пустые, можно попробовать получить данные из localStorage (если они там есть)
-            if (!nameField.value) {
-                // Можно добавить дополнительную логику для получения данных
-                console.log('Поля формы готовы к заполнению');
-            }
-        });
-
         // Валидация формы перед отправкой
         document.querySelector('form').addEventListener('submit', function(e) {
             const name = document.getElementById('customer_name').value.trim();
