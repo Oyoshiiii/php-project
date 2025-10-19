@@ -1,9 +1,9 @@
 <?php
-session_start();
+session_start(); 
 
 $title = "Каталог мерча";
 try {
-    $pdo = new PDO("mysql:host=localhost;dbname=mangawebsite", "root", "12345"); // ИСПРАВЛЕНО: переменная должна называться $pdo
+    $pdo = new PDO("mysql:host=localhost;dbname=mangawebsite", "root", "12345"); 
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } 
 catch(PDOException $e) {
@@ -65,7 +65,7 @@ if (!isset($_SESSION['cart'])) {
 
 if ($_POST && isset($_POST['product_id'])) {
     addToCart($_POST['product_id'], 1);
-    header("Location: " . $_SERVER['PHP_SELF'])
+    header("Location: " . $_SERVER['PHP_SELF']); 
     exit();
 }
 
