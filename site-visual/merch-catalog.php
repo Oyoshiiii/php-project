@@ -1,5 +1,74 @@
 <?php
+session_start();
+
 $title = "Каталог мерча";
+try {
+    $pdo = new PDO("mysql:host=localhost;dbname=mangawebsite", "root", "12345"); // ИСПРАВЛЕНО: переменная должна называться $pdo
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} 
+catch(PDOException $e) {
+    die("Ошибка подключения: " . $e->getMessage());
+}
+
+function addToCart($product_id, $quantity = 1) {
+    if (isset($_SESSION['cart'][$product_id])) {
+        $_SESSION['cart'][$product_id] += $quantity;
+    } else {
+        $_SESSION['cart'][$product_id] = $quantity;
+    }
+}
+
+function removeFromCart($product_id) {
+    if (isset($_SESSION['cart'][$product_id])) {
+        unset($_SESSION['cart'][$product_id]);
+    }
+}
+
+function updateCart($product_id, $quantity) {
+    if ($quantity <= 0) {
+        removeFromCart($product_id);
+    } else {
+        $_SESSION['cart'][$product_id] = $quantity;
+    }
+}
+
+function getCartTotal($pdo) {
+    $total = 0;
+    if (!empty($_SESSION['cart'])) {
+        $product_ids = array_keys($_SESSION['cart']);
+        $placeholders = str_repeat('?,', count($product_ids) - 1) . '?';
+        
+        $stmt = $pdo->prepare("SELECT id, price FROM products WHERE id IN ($placeholders)");
+        $stmt->execute($product_ids);
+        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach ($products as $product) {
+            $total += $product['price'] * $_SESSION['cart'][$product['id']];
+        }
+    }
+    return $total;
+}
+
+function getCartCount() {
+    $count = 0;
+    if (isset($_SESSION['cart'])) {
+        foreach ($_SESSION['cart'] as $quantity) {
+            $count += $quantity;
+        }
+    }
+    return $count;
+}
+
+if (!isset($_SESSION['cart'])) {
+    $_SESSION['cart'] = [];
+}
+
+if ($_POST && isset($_POST['product_id'])) {
+    addToCart($_POST['product_id'], 1);
+    header("Location: " . $_SERVER['PHP_SELF'])
+    exit();
+}
+
 require("blocks/header.php");
 ?>
 
@@ -55,109 +124,18 @@ require("blocks/header.php");
             </div>
         </div>
         <?php
-            /*
-            
-            class Database {
-                private $host = "localhost";
-                private $db_name = "online_store";
-                private $username = "root";
-                private $password = "12345";
-                public $conn;
-
-                public function getConnection() {
-                    $this->conn = null;
-                    try {
-                        $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
-                        $this->conn->exec("set names utf8");
-                        $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-                    } catch(PDOException $exception) {
-                        echo "Ошибка подключения: " . $exception->getMessage();
-                    }
-                    return $this->conn;
-                }
-            }
-            
-            $database = new Database();
-            $pdo = $database->getConnection();
-
-            // Обработка добавления в корзину
-            if ($_POST && isset($_POST['product_id'])) {
-                addToCart($_POST['product_id'], 1);
-                header("Location: products.php");
-                exit();
-            }
-
             // Получение товаров из базы данных
             $stmt = $pdo->prepare("SELECT * FROM products ORDER BY created_at DESC");
             $stmt->execute();
             $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            session_start();
-
-            // Инициализация корзины
-            if (!isset($_SESSION['cart'])) {
-                $_SESSION['cart'] = [];
-            }
-
-            // Добавление товара в корзину
-            function addToCart($product_id, $quantity = 1) {
-                if (isset($_SESSION['cart'][$product_id])) {
-                    $_SESSION['cart'][$product_id] += $quantity;
-                } else {
-                    $_SESSION['cart'][$product_id] = $quantity;
-                }
-            }
-
-            // Удаление товара из корзины
-            function removeFromCart($product_id) {
-                if (isset($_SESSION['cart'][$product_id])) {
-                    unset($_SESSION['cart'][$product_id]);
-                }
-            }
-
-            // Обновление количества товара
-            function updateCart($product_id, $quantity) {
-                if ($quantity <= 0) {
-                    removeFromCart($product_id);
-                } else {
-                    $_SESSION['cart'][$product_id] = $quantity;
-                }
-            }
-
-            // Получение общей стоимости корзины
-            function getCartTotal($pdo) {
-                $total = 0;
-                if (!empty($_SESSION['cart'])) {
-                    $product_ids = array_keys($_SESSION['cart']);
-                    $placeholders = str_repeat('?,', count($product_ids) - 1) . '?';
-                    
-                    $stmt = $pdo->prepare("SELECT id, price FROM products WHERE id IN ($placeholders)");
-                    $stmt->execute($product_ids);
-                    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                    
-                    foreach ($products as $product) {
-                        $total += $product['price'] * $_SESSION['cart'][$product['id']];
-                    }
-                }
-                return $total;
-            }
-
-            // Получение количества товаров в корзине
-            function getCartCount() {
-                $count = 0;
-                foreach ($_SESSION['cart'] as $quantity) {
-                    $count += $quantity;
-                }
-                return $count;
-            }
-            */
         ?>
-        <!-- Сетка товаров мерча (Позже переделать под выгрузку из БД вместо ручного написания.) -->
-        <div class="products-grid">
+        <!-- Сетка товаров мерча -->
+        <div class="catalog-grid">
             <?php foreach ($products as $product): ?>
-                <div class="product-card">
+                <div class="catalog-inteam">
                     <div class="product-image">
                         <img src="images/<?php echo $product['image']; ?>" alt="<?php echo $product['name']; ?>" 
-                            onerror="this.src="<?php echo urlencode($product['name']); ?>'">
+                            onerror="this.src='<?php echo urlencode($product['name']); ?>'"> <!-- ИСПРАВЛЕНО: синтаксис onerror -->
                     </div>
                     <div class="product-info">
                         <h3><?php echo htmlspecialchars($product['name']); ?></h3>
