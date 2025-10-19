@@ -218,16 +218,6 @@ require("blocks/header.php");
                     ✅ Подтвердить заказ
                 </button>
             </form>
-            
-            <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 5px; border: 1px solid #ffeaa7;">
-                <h4>ℹ️ Информация о заказе</h4>
-                <p>После оформления заказа:</p>
-                <ul>
-                    <li>Вы получите номер заказа для отслеживания</li>
-                    <li>С вами свяжутся для подтверждения заказа</li>
-                    <li>Заказ будет обработан в течение 24 часов</li>
-                </ul>
-            </div>
         </div>
         
         <div class="order-summary">
