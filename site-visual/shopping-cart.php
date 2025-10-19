@@ -106,23 +106,31 @@ require("blocks/header.php");
     <title>Корзина - MangaMerchHub</title>
     <link rel="stylesheet" href="css/merch-catalog.css">
     <style>
+        
         .cart-container {
-            max-width: 1200px;
+            max-width: fit-content;
             margin: 0 auto;
             padding: 20px;
+            background-color: #1a1a2e;
         }
         
         .cart-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-evenly;
+            color: white;
             align-items: center;
             margin-bottom: 30px;
+        }
+
+        .cart-header h1{
+            color: white;
         }
         
         .cart-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 30px;
+            background-color: #1a1a2e;
         }
         
         .cart-table th,
@@ -130,10 +138,11 @@ require("blocks/header.php");
             padding: 15px;
             text-align: left;
             border-bottom: 1px solid #ddd;
+            background-color: #1a1a2e;
         }
         
         .cart-table th {
-            background: #f8f9fa;
+            background-color: #1a1a2e;
             font-weight: bold;
         }
         
@@ -193,7 +202,7 @@ require("blocks/header.php");
         .cart-total {
             text-align: right;
             padding: 20px;
-            background: #f8f9fa;
+            background-color: #1a1a2e;
             border-radius: 8px;
         }
         
@@ -236,6 +245,9 @@ require("blocks/header.php");
             border: none;
             border-radius: 4px;
             cursor: pointer;
+        }
+        .thead{
+            background-color: #1a1a2e;
         }
     </style>
 </head>

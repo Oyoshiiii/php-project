@@ -154,7 +154,7 @@ require("blocks/header.php");
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Оформление заказа - MangaMerchHub</title>
-    <link rel="stylesheet" href="css/merch-catalog.css">
+    <link rel="stylesheet" href="css/checkout.css">
 </head>
 <body>
     <div class="checkout-container">
