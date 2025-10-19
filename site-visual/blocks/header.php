@@ -71,7 +71,7 @@
                         <!-- Показываем кнопку входа для неавторизованных -->
                         <a href="login.php" class="btn btn-outline">Войти</a>
                     <?php endif; ?>
-                    <button class="btn btn-primary">Корзина (0)</button>
+                    <a href="shopping-cart.php" class="btn btn-primary">Корзина (0)</a>
                 </div>
             </div>
         </div>

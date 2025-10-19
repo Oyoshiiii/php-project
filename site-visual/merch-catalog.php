@@ -133,11 +133,11 @@ require("blocks/header.php");
         <div class="catalog-grid">
             <?php foreach ($products as $product): ?>
                 <div class="catalog-inteam">
-                    <div class="product-image">
+                    <div class="item-img">
                         <img src="images/<?php echo $product['image']; ?>" alt="<?php echo $product['name']; ?>" 
-                            onerror="this.src='<?php echo urlencode($product['name']); ?>'"> <!-- ИСПРАВЛЕНО: синтаксис onerror -->
+                            onerror="this.src='<?php echo urlencode($product['name']); ?>'">
                     </div>
-                    <div class="product-info">
+                    <div class="item-info">
                         <h3><?php echo htmlspecialchars($product['name']); ?></h3>
                         <p class="product-description"><?php echo htmlspecialchars($product['description']); ?></p>
                         <p class="product-price">$<?php echo number_format($product['price'], 2); ?></p>
