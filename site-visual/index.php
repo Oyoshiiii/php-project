@@ -98,41 +98,6 @@ require("blocks/header.php");
     </section>
 
     <!-- Секция информации о манге -->
-    <section class="manga-info">
-        <div class="container">
-            <h2 class="section-title">Узнайте больше о манге</h2>
-            <div class="manga-search">
-                <input type="text" placeholder="Найдите мангу или персонажа...">
-                <button>Поиск</button>
-            </div>
-            <div class="manga-grid">
-                <div class="manga-card">
-                    <div class="manga-img">📖</div>
-                    <div class="manga-details">
-                        <h3 class="manga-title">Наруто</h3>
-                        <p class="manga-meta">Масаси Кисимото • Сёнэн</p>
-                        <p>История о мальчике-ниндзя, мечтающем стать Хокагэ своей деревни.</p>
-                    </div>
-                </div>
-                <div class="manga-card">
-                    <div class="manga-img">📖</div>
-                    <div class="manga-details">
-                        <h3 class="manga-title">Атака титанов</h3>
-                        <p class="manga-meta">Хадзимэ Исаяма • Сёнэн</p>
-                        <p>Человечество борется за выживание против гигантских титанов.</p>
-                    </div>
-                </div>
-                <div class="manga-card">
-                    <div class="manga-img">📖</div>
-                    <div class="manga-details">
-                        <h3 class="manga-title">Ван-Пис</h3>
-                        <p class="manga-meta">Эйитиро Ода • Сёнэн</p>
-                        <p>Приключения пирата Манки Д. Луффи и его команды.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Секция преимуществ -->
     <section class="benefits">

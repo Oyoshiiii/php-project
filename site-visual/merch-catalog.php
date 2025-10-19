@@ -195,41 +195,7 @@ require("blocks/header.php");
 
         <!-- Фильтры для товаров -->
         <div class="catalog-filters">
-            <div class="filter-row">
-                <div class="filter-group">
-                    <label for="category">Категория</label>
-                    <select id="category">
-                        <option value="">Все категории</option>
-                        <option value="electronics">Электроника</option>
-                        <option value="phones">Телефоны</option>
-                        <option value="laptops">Ноутбуки</option>
-                        <option value="accessories">Аксессуары</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="brand">Бренд</label>
-                    <select id="brand">
-                        <option value="">Все бренды</option>
-                        <option value="apple">Apple</option>
-                        <option value="samsung">Samsung</option>
-                        <option value="sony">Sony</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="price">Цена</label>
-                    <select id="price">
-                        <option value="">Любая цена</option>
-                        <option value="0-500">До 500 руб.</option>
-                        <option value="500-1000">500 - 1000 руб.</option>
-                        <option value="1000-2000">1000 - 2000 руб.</option>
-                        <option value="2000+">От 2000 руб.</option>
-                    </select>
-                </div>
-            </div>
-            <div class="search-box">
-                <input type="text" id="search-input" placeholder="Поиск товаров...">
-                <button id="search-btn">Найти</button>
-            </div>
+            
         </div>
         
         <?php
