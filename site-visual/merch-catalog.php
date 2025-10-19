@@ -54,178 +54,123 @@ require("blocks/header.php");
                 <button>Найти</button>
             </div>
         </div>
+        <?php
+            /*
+            
+            class Database {
+                private $host = "localhost";
+                private $db_name = "online_store";
+                private $username = "root";
+                private $password = "12345";
+                public $conn;
 
+                public function getConnection() {
+                    $this->conn = null;
+                    try {
+                        $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
+                        $this->conn->exec("set names utf8");
+                        $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                    } catch(PDOException $exception) {
+                        echo "Ошибка подключения: " . $exception->getMessage();
+                    }
+                    return $this->conn;
+                }
+            }
+            
+            $database = new Database();
+            $pdo = $database->getConnection();
+
+            // Обработка добавления в корзину
+            if ($_POST && isset($_POST['product_id'])) {
+                addToCart($_POST['product_id'], 1);
+                header("Location: products.php");
+                exit();
+            }
+
+            // Получение товаров из базы данных
+            $stmt = $pdo->prepare("SELECT * FROM products ORDER BY created_at DESC");
+            $stmt->execute();
+            $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            session_start();
+
+            // Инициализация корзины
+            if (!isset($_SESSION['cart'])) {
+                $_SESSION['cart'] = [];
+            }
+
+            // Добавление товара в корзину
+            function addToCart($product_id, $quantity = 1) {
+                if (isset($_SESSION['cart'][$product_id])) {
+                    $_SESSION['cart'][$product_id] += $quantity;
+                } else {
+                    $_SESSION['cart'][$product_id] = $quantity;
+                }
+            }
+
+            // Удаление товара из корзины
+            function removeFromCart($product_id) {
+                if (isset($_SESSION['cart'][$product_id])) {
+                    unset($_SESSION['cart'][$product_id]);
+                }
+            }
+
+            // Обновление количества товара
+            function updateCart($product_id, $quantity) {
+                if ($quantity <= 0) {
+                    removeFromCart($product_id);
+                } else {
+                    $_SESSION['cart'][$product_id] = $quantity;
+                }
+            }
+
+            // Получение общей стоимости корзины
+            function getCartTotal($pdo) {
+                $total = 0;
+                if (!empty($_SESSION['cart'])) {
+                    $product_ids = array_keys($_SESSION['cart']);
+                    $placeholders = str_repeat('?,', count($product_ids) - 1) . '?';
+                    
+                    $stmt = $pdo->prepare("SELECT id, price FROM products WHERE id IN ($placeholders)");
+                    $stmt->execute($product_ids);
+                    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                    
+                    foreach ($products as $product) {
+                        $total += $product['price'] * $_SESSION['cart'][$product['id']];
+                    }
+                }
+                return $total;
+            }
+
+            // Получение количества товаров в корзине
+            function getCartCount() {
+                $count = 0;
+                foreach ($_SESSION['cart'] as $quantity) {
+                    $count += $quantity;
+                }
+                return $count;
+            }
+            */
+        ?>
         <!-- Сетка товаров мерча (Позже переделать под выгрузку из БД вместо ручного написания.) -->
-        <div class="catalog-grid">
-            <!-- Товар 1 -->
-            <div class="catalog-item">
-                <div class="item-img" style="background-color: #ffe6ee;">👕</div>
-                <div class="item-info">
-                    <h3 class="item-title">Футболка "Наруто" с символом Конохи</h3>
-                    <p class="item-meta">Наруто • Одежда</p>
-                    <p class="item-price">1 499 ₽</p>
-                    <div class="item-actions">
-                        <button class="btn btn-primary btn-small">В корзину</button>
-                        <button class="btn btn-outline btn-small">Подробнее</button>
+        <div class="products-grid">
+            <?php foreach ($products as $product): ?>
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="images/<?php echo $product['image']; ?>" alt="<?php echo $product['name']; ?>" 
+                            onerror="this.src="<?php echo urlencode($product['name']); ?>'">
+                    </div>
+                    <div class="product-info">
+                        <h3><?php echo htmlspecialchars($product['name']); ?></h3>
+                        <p class="product-description"><?php echo htmlspecialchars($product['description']); ?></p>
+                        <p class="product-price">$<?php echo number_format($product['price'], 2); ?></p>
+                        <form method="post">
+                            <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                            <button type="submit" class="add-to-cart-btn">Добавить в корзину</button>
+                        </form>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Товар 2 -->
-            <div class="catalog-item">
-                <div class="item-img" style="background-color: #e6f7ff;">🎎</div>
-                <div class="item-info">
-                    <h3 class="item-title">Фигурка Сейлор Мун (15 см)</h3>
-                    <p class="item-meta">Сейлор Мун • Фигурки</p>
-                    <p class="item-price">3 299 ₽</p>
-                    <div class="item-actions">
-                        <button class="btn btn-primary btn-small">В корзину</button>
-                        <button class="btn btn-outline btn-small">Подробнее</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Товар 3 -->
-            <div class="catalog-item">
-                <div class="item-img" style="background-color: #f0e6ff;">🎒</div>
-                <div class="item-info">
-                    <h3 class="item-title">Рюкзак "Атака титанов"</h3>
-                    <p class="item-meta">Атака титанов • Аксессуары</p>
-                    <p class="item-price">2 599 ₽</p>
-                    <div class="item-actions">
-                        <button class="btn btn-primary btn-small">В корзину</button>
-                        <button class="btn btn-outline btn-small">Подробнее</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Товар 4 -->
-            <div class="catalog-item">
-                <div class="item-img" style="background-color: #e6ffe6;">👓</div>
-                <div class="item-info">
-                    <h3 class="item-title">Кепка "Токийский гуль"</h3>
-                    <p class="item-meta">Токийский гуль • Аксессуары</p>
-                    <p class="item-price">1 199 ₽</p>
-                    <div class="item-actions">
-                        <button class="btn btn-primary btn-small">В корзину</button>
-                        <button class="btn btn-outline btn-small">Подробнее</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Товар 5 -->
-            <div class="catalog-item">
-                <div class="item-img" style="background-color: #fff0e6;">🔑</div>
-                <div class="item-info">
-                    <h3 class="item-title">Брелок "Маска Саске"</h3>
-                    <p class="item-meta">Наруто • Аксессуары</p>
-                    <p class="item-price">599 ₽</p>
-                    <div class="item-actions">
-                        <button class="btn btn-primary btn-small">В корзину</button>
-                        <button class="btn btn-outline btn-small">Подробнее</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Товар 6 -->
-            <div class="catalog-item">
-                <div class="item-img" style="background-color: #e6f0ff;">📿</div>
-                <div class="item-info">
-                    <h3 class="item-title">Кулон "Драконий жемчуг"</h3>
-                    <p class="item-meta">Dragon Ball • Аксессуары</p>
-                    <p class="item-price">899 ₽</p>
-                    <div class="item-actions">
-                        <button class="btn btn-primary btn-small">В корзину</button>
-                        <button class="btn btn-outline btn-small">Подробнее</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Товар 7 -->
-            <div class="catalog-item">
-                <div class="item-img" style="background-color: #ffe6f0;">🧢</div>
-                <div class="item-info">
-                    <h3 class="item-title">Кепка "Моя геройская академия"</h3>
-                    <p class="item-meta">Моя геройская академия • Одежда</p>
-                    <p class="item-price">1 299 ₽</p>
-                    <div class="item-actions">
-                        <button class="btn btn-primary btn-small">В корзину</button>
-                        <button class="btn btn-outline btn-small">Подробнее</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Товар 8 -->
-            <div class="catalog-item">
-                <div class="item-img" style="background-color: #f0ffe6;">👘</div>
-                <div class="item-info">
-                    <h3 class="item-title">Худи "Клинок, рассекающий демонов"</h3>
-                    <p class="item-meta">Клинок, рассекающий демонов • Одежда</p>
-                    <p class="item-price">2 799 ₽</p>
-                    <div class="item-actions">
-                        <button class="btn btn-primary btn-small">В корзину</button>
-                        <button class="btn btn-outline btn-small">Подробнее</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Товар 9 -->
-            <div class="catalog-item">
-                <div class="item-img" style="background-color: #fff2e6;">🥋</div>
-                <div class="item-info">
-                    <h3 class="item-title">Толстовка "Наруто" с символом Узумаки</h3>
-                    <p class="item-meta">Наруто • Одежда</p>
-                    <p class="item-price">2 499 ₽</p>
-                    <div class="item-actions">
-                        <button class="btn btn-primary btn-small">В корзину</button>
-                        <button class="btn btn-outline btn-small">Подробнее</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Товар 10 -->
-            <div class="catalog-item">
-                <div class="item-img" style="background-color: #e6f2ff;">🗡️</div>
-                <div class="item-info">
-                    <h3 class="item-title">Фигурка Леви Акермана (20 см)</h3>
-                    <p class="item-meta">Атака титанов • Фигурки</p>
-                    <p class="item-price">4 299 ₽</p>
-                    <div class="item-actions">
-                        <button class="btn btn-primary btn-small">В корзину</button>
-                        <button class="btn btn-outline btn-small">Подробнее</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Товар 11 -->
-            <div class="catalog-item">
-                <div class="item-img" style="background-color: #f0e6ff;">👟</div>
-                <div class="item-info">
-                    <h3 class="item-title">Кроссовки "Моя геройская академия"</h3>
-                    <p class="item-meta">Моя геройская академия • Одежда</p>
-                    <p class="item-price">3 999 ₽</p>
-                    <div class="item-actions">
-                        <button class="btn btn-primary btn-small">В корзину</button>
-                        <button class="btn btn-outline btn-small">Подробнее</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Товар 12 -->
-            <div class="catalog-item">
-                <div class="item-img" style="background-color: #e6ffe6;">🎨</div>
-                <div class="item-info">
-                    <h3 class="item-title">Постер "Сейлор Мун" (А3)</h3>
-                    <p class="item-meta">Сейлор Мун • Аксессуары</p>
-                    <p class="item-price">799 ₽</p>
-                    <div class="item-actions">
-                        <button class="btn btn-primary btn-small">В корзину</button>
-                        <button class="btn btn-outline btn-small">Подробнее</button>
-                    </div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
-
         <!-- Страницы -->
         <div class="pagination">
             <a href="#" class="page-link active">1</a>
