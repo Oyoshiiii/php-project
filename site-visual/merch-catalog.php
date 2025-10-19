@@ -184,12 +184,6 @@ require("blocks/header.php");
     </style>
 </head>
 <body>
- 
-    <!-- Индикатор корзины -->
-    <a href="cart.php" class="cart-indicator">
-        🛒 Корзина: <?php echo getCartCount(); ?> товаров
-    </a>
-
     <div class="container">
         <!-- Сообщения -->
         <?php if (isset($_SESSION['cart_message'])): ?>

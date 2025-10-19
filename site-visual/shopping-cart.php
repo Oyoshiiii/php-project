@@ -269,7 +269,7 @@ require("blocks/header.php");
             <div class="empty-cart">
                 <h2>Ваша корзина пуста</h2>
                 <p>Добавьте товары из каталога, чтобы сделать заказ</p>
-                <a href="catalog.php">Перейти в каталог</a>
+                <a href="merch-catalog.php">Перейти в каталог</a>
             </div>
         <?php else: ?>
             <table class="cart-table">
