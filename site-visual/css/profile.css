@@ -1,10 +1,17 @@
-        :root {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+:root {
     --primary: #ff6b9d;
     --secondary: #5d5fef;
     --dark: #1a1a2e;
     --light: #f8f9fa;
     --accent: #ffd166;
-
+    
     /* Тёмная тема */
     --bg-color: #121212;
     --text-color: #e0e0e0;
@@ -15,239 +22,229 @@
     --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     --muted-text: #aaa;
 }
-        
-        
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
 
-        body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
 
-        .container {
-            background: var(--dark);
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-            width: 100%;
-            max-width: 500px;
-        }
+.container {
+    background: var(--card-bg);
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    padding: 40px;
+    width: 100%;
+    max-width: 500px;
+    border: 1px solid var(--border-color);
+}
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
 
-        .header h1 {
-            color: #ffffff;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
+.header h1 {
+    color: var(--primary);
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
 
-        .avatar-section {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+.avatar-section {
+    text-align: center;
+    margin-bottom: 20px;
+}
 
-        .avatar-container {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 15px;
-        }
+.avatar-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 15px;
+}
 
-        .user-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #667eea;
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
+.user-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--secondary);
+    cursor: pointer;
+    transition: transform 0.3s;
+}
 
-        .user-avatar:hover {
-            transform: scale(1.05);
-        }
+.user-avatar:hover {
+    transform: scale(1.05);
+}
 
-        .avatar-placeholder {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2.5em;
-            font-weight: bold;
-            border: 4px solid #667eea;
-            cursor: pointer;
-        }
+.avatar-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--secondary), var(--primary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2.5em;
+    font-weight: bold;
+    border: 4px solid var(--secondary);
+    cursor: pointer;
+}
 
-        .avatar-upload-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s;
-        }
+.avatar-upload-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
 
-        .avatar-upload-btn:hover {
-            background: #218838;
-        }
+.avatar-upload-btn:hover {
+    background: #e4588c;
+}
 
-        #avatarInput {
-            display: none;
-        }
+#avatarInput {
+    display: none;
+}
 
-        .form-section {
-            margin-bottom: 30px;
-        }
+.form-section {
+    margin-bottom: 30px;
+}
 
-        .form-section h2 {
-            color: #ffffff;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #667eea;
-        }
+.form-section h2 {
+    color: var(--text-color);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--secondary);
+}
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+.form-group {
+    margin-bottom: 20px;
+}
 
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: #ffffff;
-            font-weight: bold;
-        }
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--muted-text);
+    font-weight: bold;
+}
 
-        .form-group input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-            background-color: var(--dark);
-            color: #555;
-        }
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+    background: #111;
+    color: var(--text-color);
+}
 
-        .form-group input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
+.form-group input:focus {
+    outline: none;
+    border-color: var(--secondary);
+}
 
-        .btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            width: 100%;
-        }
+.btn {
+    background: linear-gradient(135deg, var(--secondary), var(--primary));
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    width: 100%;
+}
 
-        .btn:hover {
-            transform: translateY(-2px);
-        }
+.btn:hover {
+    transform: translateY(-2px);
+}
 
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d, #495057);
-        }
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d, #495057);
+}
 
-        .btn-danger {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-        }
+.btn-danger {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+}
 
-        .message {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
+.message {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+}
 
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
+.error-message {
+    background: #4a1116;
+    color: #ffb3b3;
+    border: 1px solid #802727;
+}
 
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
+.success-message {
+    background: #163a20;
+    color: #b5f5c9;
+    border: 1px solid #2a7a46;
+}
 
-        .user-info {
-            background: var(--dark);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            color: white;
-        }
+.user-info {
+    background: rgba(93, 95, 239, 0.08);
+    border: 1px solid var(--secondary);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
 
-        .user-info p {
-            margin-bottom: 10px;
-            color: #ffffff;
-        }
-        .user-info p span{
-            color: white;
-        }
+.user-info p {
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
 
-        .info-label {
-            font-weight: bold;
-            color: #333;
-        }
+.info-label {
+    font-weight: bold;
+    color: var(--accent);
+}
 
-        .navigation {
-            text-align: center;
-            margin-top: 20px;
-        }
+.navigation {
+    text-align: center;
+    margin-top: 20px;
+}
 
-        .navigation a {
-            color: #667eea;
-            text-decoration: none;
-            margin: 0 10px;
-            transition: color 0.3s;
-        }
+.navigation a {
+    color: var(--secondary);
+    text-decoration: none;
+    margin: 0 10px;
+    transition: color 0.3s;
+}
 
-        .navigation a:hover {
-            color: #764ba2;
-            text-decoration: underline;
-        }
+.navigation a:hover {
+    color: var(--primary);
+    text-decoration: underline;
+}
 
-        .password-note {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
+.password-note {
+    background: #332b00;
+    border: 1px solid #665800;
+    color: #ffd166;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
 
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-            
-            .header h1 {
-                font-size: 2em;
-            }
-        }
+@media (max-width: 600px) {
+    .container {
+        padding: 20px;
+    }
+    
+    .header h1 {
+        font-size: 2em;
+    }
+}
