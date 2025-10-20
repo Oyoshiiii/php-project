@@ -1,4 +1,23 @@
+        :root {
+    --primary: #ff6b9d;
+    --secondary: #5d5fef;
+    --dark: #1a1a2e;
+    --light: #f8f9fa;
+    --accent: #ffd166;
 
+    /* Тёмная тема */
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --card-bg: #1e1e1e;
+    --header-bg: #0a0a0a;
+    --footer-bg: #050505;
+    --border-color: #333;
+    --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    --muted-text: #aaa;
+}
+        
+        
+        
         * {
             margin: 0;
             padding: 0;
@@ -16,7 +35,7 @@
         }
 
         .container {
-            background: white;
+            background: var(--dark);
             border-radius: 15px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
             padding: 40px;
@@ -30,7 +49,7 @@
         }
 
         .header h1 {
-            color: #333;
+            color: #ffffff;
             font-size: 2.5em;
             margin-bottom: 10px;
         }
@@ -99,7 +118,7 @@
         }
 
         .form-section h2 {
-            color: #333;
+            color: #ffffff;
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 2px solid #667eea;
@@ -112,7 +131,7 @@
         .form-group label {
             display: block;
             margin-bottom: 5px;
-            color: #555;
+            color: #ffffff;
             font-weight: bold;
         }
 
@@ -123,6 +142,8 @@
             border-radius: 8px;
             font-size: 16px;
             transition: border-color 0.3s;
+            background-color: var(--dark);
+            color: #555;
         }
 
         .form-group input:focus {
@@ -174,15 +195,19 @@
         }
 
         .user-info {
-            background: #f8f9fa;
+            background: var(--dark);
             padding: 20px;
             border-radius: 8px;
             margin-bottom: 20px;
+            color: white;
         }
 
         .user-info p {
             margin-bottom: 10px;
-            color: #555;
+            color: #ffffff;
+        }
+        .user-info p span{
+            color: white;
         }
 
         .info-label {
